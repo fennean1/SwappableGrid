@@ -1,0 +1,22 @@
+dependencies: \
+  /Users/andrewfenner/Desktop/jelly-jam/node_modules/react-native/React/Modules/RCTDevSettings.mm \
+  /Users/andrewfenner/Desktop/jelly-jam/node_modules/react-native/React/Modules/RCTDevSettings.h \
+  /Users/andrewfenner/Desktop/jelly-jam/node_modules/react-native/React/Base/RCTBridge.h \
+  /Users/andrewfenner/Desktop/jelly-jam/node_modules/react-native/React/Base/RCTBridgeDelegate.h \
+  /Users/andrewfenner/Desktop/jelly-jam/node_modules/react-native/React/Base/RCTJavaScriptLoader.h \
+  /Users/andrewfenner/Desktop/jelly-jam/node_modules/react-native/React/Base/RCTDefines.h \
+  /Users/andrewfenner/Desktop/jelly-jam/node_modules/react-native/React/Base/RCTBridgeModule.h \
+  /Users/andrewfenner/Desktop/jelly-jam/node_modules/react-native/React/Base/RCTFrameUpdate.h \
+  /Users/andrewfenner/Desktop/jelly-jam/node_modules/react-native/React/Base/RCTInvalidating.h \
+  /Users/andrewfenner/Desktop/jelly-jam/ios/build/Build/Products/Debug-iphonesimulator/include/jschelpers/JavaScriptCore.h \
+  /Users/andrewfenner/Desktop/jelly-jam/ios/build/Build/Products/Debug-iphonesimulator/include/jschelpers/JSCWrapper.h \
+  /Users/andrewfenner/Desktop/jelly-jam/node_modules/react-native/React/Base/RCTBridge+Private.h \
+  /Users/andrewfenner/Desktop/jelly-jam/node_modules/react-native/React/Base/RCTEventDispatcher.h \
+  /Users/andrewfenner/Desktop/jelly-jam/node_modules/react-native/React/Modules/RCTJSCSamplingProfiler.h \
+  /Users/andrewfenner/Desktop/jelly-jam/node_modules/react-native/React/Base/RCTLog.h \
+  /Users/andrewfenner/Desktop/jelly-jam/node_modules/react-native/React/Base/RCTAssert.h \
+  /Users/andrewfenner/Desktop/jelly-jam/node_modules/react-native/React/Base/RCTUtils.h \
+  /Users/andrewfenner/Desktop/jelly-jam/node_modules/react-native/React/DevSupport/RCTPackagerClient.h \
+  /Users/andrewfenner/Desktop/jelly-jam/node_modules/react-native/React/Profiler/RCTProfile.h \
+  /Users/andrewfenner/Desktop/jelly-jam/node_modules/react-native/React/DevSupport/RCTPackagerConnection.h \
+  /Users/andrewfenner/Desktop/jelly-jam/node_modules/react-native/React/DevSupport/RCTInspectorDevServerHelper.h

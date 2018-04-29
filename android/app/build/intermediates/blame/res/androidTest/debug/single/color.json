@@ -1,0 +1,38 @@
+[
+    {
+        "merged": "/Users/andrewfenner/Desktop/DragAndDrop/android/app/build/intermediates/res/merged/androidTest/debug/color/switch_thumb_material_light.xml",
+        "source": "/Users/andrewfenner/.gradle/caches/transforms-1/files-1.1/appcompat-v7-23.0.1.aar/4c7e3ac889f0f323a9c3489ca895cfb1/res/color/switch_thumb_material_light.xml"
+    },
+    {
+        "merged": "/Users/andrewfenner/Desktop/DragAndDrop/android/app/build/intermediates/res/merged/androidTest/debug/color/abc_primary_text_material_light.xml",
+        "source": "/Users/andrewfenner/.gradle/caches/transforms-1/files-1.1/appcompat-v7-23.0.1.aar/4c7e3ac889f0f323a9c3489ca895cfb1/res/color/abc_primary_text_material_light.xml"
+    },
+    {
+        "merged": "/Users/andrewfenner/Desktop/DragAndDrop/android/app/build/intermediates/res/merged/androidTest/debug/color/abc_search_url_text.xml",
+        "source": "/Users/andrewfenner/.gradle/caches/transforms-1/files-1.1/appcompat-v7-23.0.1.aar/4c7e3ac889f0f323a9c3489ca895cfb1/res/color/abc_search_url_text.xml"
+    },
+    {
+        "merged": "/Users/andrewfenner/Desktop/DragAndDrop/android/app/build/intermediates/res/merged/androidTest/debug/color/abc_secondary_text_material_light.xml",
+        "source": "/Users/andrewfenner/.gradle/caches/transforms-1/files-1.1/appcompat-v7-23.0.1.aar/4c7e3ac889f0f323a9c3489ca895cfb1/res/color/abc_secondary_text_material_light.xml"
+    },
+    {
+        "merged": "/Users/andrewfenner/Desktop/DragAndDrop/android/app/build/intermediates/res/merged/androidTest/debug/color/abc_secondary_text_material_dark.xml",
+        "source": "/Users/andrewfenner/.gradle/caches/transforms-1/files-1.1/appcompat-v7-23.0.1.aar/4c7e3ac889f0f323a9c3489ca895cfb1/res/color/abc_secondary_text_material_dark.xml"
+    },
+    {
+        "merged": "/Users/andrewfenner/Desktop/DragAndDrop/android/app/build/intermediates/res/merged/androidTest/debug/color/abc_primary_text_material_dark.xml",
+        "source": "/Users/andrewfenner/.gradle/caches/transforms-1/files-1.1/appcompat-v7-23.0.1.aar/4c7e3ac889f0f323a9c3489ca895cfb1/res/color/abc_primary_text_material_dark.xml"
+    },
+    {
+        "merged": "/Users/andrewfenner/Desktop/DragAndDrop/android/app/build/intermediates/res/merged/androidTest/debug/color/abc_primary_text_disable_only_material_dark.xml",
+        "source": "/Users/andrewfenner/.gradle/caches/transforms-1/files-1.1/appcompat-v7-23.0.1.aar/4c7e3ac889f0f323a9c3489ca895cfb1/res/color/abc_primary_text_disable_only_material_dark.xml"
+    },
+    {
+        "merged": "/Users/andrewfenner/Desktop/DragAndDrop/android/app/build/intermediates/res/merged/androidTest/debug/color/abc_primary_text_disable_only_material_light.xml",
+        "source": "/Users/andrewfenner/.gradle/caches/transforms-1/files-1.1/appcompat-v7-23.0.1.aar/4c7e3ac889f0f323a9c3489ca895cfb1/res/color/abc_primary_text_disable_only_material_light.xml"
+    },
+    {
+        "merged": "/Users/andrewfenner/Desktop/DragAndDrop/android/app/build/intermediates/res/merged/androidTest/debug/color/switch_thumb_material_dark.xml",
+        "source": "/Users/andrewfenner/.gradle/caches/transforms-1/files-1.1/appcompat-v7-23.0.1.aar/4c7e3ac889f0f323a9c3489ca895cfb1/res/color/switch_thumb_material_dark.xml"
+    }
+]
