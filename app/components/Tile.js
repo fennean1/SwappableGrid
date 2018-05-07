@@ -57,16 +57,11 @@ export default class Draggable extends Component<{}> {
   render(){
 
 
-    let beans = [pjb,pujb,bjb,ojb,gjb,yjb,rjb]
-
 
     let scale = this.props.scale;
 
 
       let [translateX, translateY] = [this.props.location.x, this.props.location.y];
-
-      let theview = this.props.subview
-      let fade = this.props.fadeAnimation
 
       console.log('HELLO! The render function of Tile has been called!')
 

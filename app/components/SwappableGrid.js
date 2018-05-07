@@ -4,6 +4,11 @@
  * @flow
  */
 
+
+// TODO Write the condenseColumns function so that it takes the indexes instead of the color.
+// Pass "data" around instead of constantly referring to "state" this makes it so that we don't have to
+// set state as ofter
+
 import React, { Component } from 'react';
 import {
   Platform,
@@ -36,6 +41,12 @@ const instructions = Platform.select({
 import imageType from '../components/ImageTypes';
 
 
+let firstLoad = true
+
+let boardWidth = 5
+let boardHeight = 5
+
+let speed = 300
 
 class TileData {
 
@@ -93,6 +104,7 @@ export default class Swappables extends Component<{}> {
 
   onSwipe(gestureName, gestureState) {
 
+    //cancelTouches = true
 
     let initialGestureX = gestureState.x0
     let initialGestureY = gestureState.y0
@@ -224,21 +236,25 @@ export default class Swappables extends Component<{}> {
 
 pushTileDataToComponent() {
 
+  console.log("Pushing Tile Data")
+
   var a = []
   // This creates the array of Tile components that is stored as a state variable
   this.state.tileDataSource.map((row,i) => {
 
     let rows = row.map((e,j) => {
 
-    a.push( <Tile update = {this.updateGrid.bind(this)}
-    location = {e.location} scale = {e.scale} fadeAnimation = {e.fadeAnimation} key = {e.key} subview = {e.view} />)
+    a.push(<Tile
+    location = {e.location} scale = {e.scale} key = {e.key} subview = {e.view} />)
     })
     // This is where the error occurs where an element no longer receives touches.
     // Don't wrap this in a view.
     return
     rows})
 
-    this.setState({tileDataSource: a})
+    this.setState({
+      tileComponents: a}
+    )
 
 }
 
@@ -247,7 +263,6 @@ pushTileDataToComponent() {
 
                   let len = indexesToAnimate.length
 
-
                   for (var n = 0; n<len; n++) {
 
                     let e = indexesToAnimate[n]
@@ -255,31 +270,19 @@ pushTileDataToComponent() {
                     let i = e[0]
                     let j = e[1]
 
-
-                    let dx = TILE_WIDTH*2
-                    let dy = TILE_WIDTH*6
-
                     Animated.sequence([
-                    //Animated.timing(this.state.tileDataSource[i][j].scale, {toValue: 1.05, duration: 5, friction: 5}),
-                    //Animated.spring(this.state.tileDataSource[i][j].scale, {toValue: 1, friction: 5}),
-                    Animated.delay(500),
-                    Animated.timing(this.state.tileDataSource[i][j].scale,{toValue: 1.2,duration: 300}),
-                    Animated.timing(this.state.tileDataSource[i][j].scale,{toValue: 0,duration: 500}),
-                    Animated.timing(this.state.tileDataSource[i][j].fadeAnimation,{toValue: 0.4,duration: 1000}),
+                    Animated.delay(400),
+                    Animated.timing(this.state.tileDataSource[i][j].scale,{toValue: 1.1,duration: 200}),
+                    Animated.timing(this.state.tileDataSource[i][j].scale,{toValue: 1,duration: 200}),
                     ],
                   ).start(() => {
-
-                    //this.state.tileDataSource[i][j].location.setValue({x: 0, y: -500});
-                    //this.processNewMatch(indexesToAnimate)
 
                   });
 
                 }
 
-                this.pushTileDataToComponent()
 
-
-
+                setTimeout(() => {cancelTouches = false}, 100)
 
 
   }
@@ -301,6 +304,46 @@ makeJamJar() {
 
 }
 
+condenseColumns(data,beanIndexes){
+
+  let dataArray = data
+
+  let spotsToFill = 0
+  // HARDCODED!
+  for (let i = 0; i<5;i++){
+
+    spotsToFill = 0
+
+    // Iterate through each column
+    for (let j = 4; j>=0;j--){
+
+
+      let n = beanIndexes.filter(e => {return (i==e[0] && j==e[1])})
+
+      // Check to see if the element is a spot that needs filling.
+      if (n.length != 0) {
+          // Increment the spots to fill...since we found a spot to fill.
+          spotsToFill++
+          // Place the location above the top of the screen for when it "falls"
+          dataArray[i][j].location.setValue({x: TILE_WIDTH*i,y: -3*TILE_WIDTH})
+
+      }
+      else if (spotsToFill > 0)
+      {
+          // Swap
+          const currentSpot = dataArray[i][j]
+          const newSpot = dataArray[i][j+spotsToFill]
+
+          dataArray[i][j] = newSpot
+          dataArray[i][j+spotsToFill] = currentSpot
+
+      }
+    }
+  }
+
+  return dataArray
+
+}
 
 
 animateJamJar() {
@@ -314,6 +357,8 @@ animateJamJar() {
 
   updateGrid(i,j,dx,dy) {
 
+        speed = 700
+
           let doesTheStartColorAllHaveNeighbors = false
           let doesTheEndColorAllHaveNeighbors = false
           let indexesWithStarterColor = [[]]
@@ -322,49 +367,64 @@ animateJamJar() {
 
 
             const newData = this.state.tileDataSource
-            const newComponents = this.state.tileComponents
-
-            const swapStarterComponent = this.state.tileComponents[i][j]
-            const swapEnderComponent = this.state.tileComponents[i+dx][i+dy]
 
             const swapStarter = this.state.tileDataSource[i][j]
             const swapEnder = this.state.tileDataSource[i+dx][j+dy]
 
 
-            let firstJamToJam = this.state.tileDataSource[i][j].imageType
-            let secondJamToJam = this.state.tileDataSource[i+dx][j+dy].imageType
+            const firstJamToJam = this.state.tileDataSource[i][j].imageType
+            const secondJamToJam = this.state.tileDataSource[i+dx][j+dy].imageType
 
 
             newData[i][j] = swapEnder
             newData[i+dx][j+dy] = swapStarter
 
 
-            this.setState({tileDataSource: newData})
-
-            indexesWithStarterColor = this.getIndexesWithColor(this.state.tileDataSource[i][j].imageType)
-            indexesWithEnderColor = this.getIndexesWithColor(this.state.tileDataSource[i+dx][j+dy].imageType)
+            indexesWithStarterColor = this.getIndexesWithColor(firstJamToJam)
+            indexesWithEnderColor = this.getIndexesWithColor(secondJamToJam)
 
             doesTheStartColorAllHaveNeighbors = this.allHaveNeighbors(indexesWithStarterColor)
             doesTheEndColorAllHaveNeighbors = this.allHaveNeighbors(indexesWithEnderColor)
 
+            this.animateValuesToLocations()
+
+
             // Kinda clunky but it works.
-            if (doesTheEndColorAllHaveNeighbors) {
+            if (doesTheStartColorAllHaveNeighbors) {
 
 
-                this.props.bounceHead(firstJamToJam)
-                this.processNewMatch(indexesWithEnderColor)
-                this.animateMatch(indexesWithEnderColor)
+
+              let data = []
+
+              //this.props.bounceHead(secondJamToJam)
+
+              this.animateMatch(indexesWithStarterColor)
+
+              data = this.recolorMatches(this.state.tileDataSource,indexesWithStarterColor)
+
+
+              setTimeout(() => {data = this.condenseColumns(this.state.tileDataSource,indexesWithStarterColor)
+                    this.setState({tileData: data})
+                  this.pushTileDataToComponent()
+
+                this.animateValuesToLocations()},1200)
+
+
+
+
+
+
+       }
+            else if (doesTheStartColorAllHaveNeighbors)
+            {
+                // Do nothing for now.
 
               }
-
-              if (doesTheStartColorAllHaveNeighbors)
-              {
-
-                this.props.bounceHead(secondJamToJam)
-                this.processNewMatch(indexesWithStarterColor)
-                this.animateMatch(indexesWithStarterColor)
-
+              else {
+                cancelTouches = false
               }
+
+
 
 
 
@@ -395,7 +455,10 @@ allHaveNeighbors(indexes) {
 
 componentDidUpdate() {
 
-      this.animateValuesToLocations()
+      // !!! Make this take a "Type" and perform an animation based on the
+      // type of update that's occured. ie swipe, condense, load.
+
+      //this.animateValuesToLocations()
 
 }
 
@@ -453,6 +516,8 @@ componentDidUpdate() {
 
         this.setState({tileComponents: a})
 
+        this.animateValuesToLocations()
+
     }
 
     // Gets all indexes with a specific color.
@@ -486,21 +551,20 @@ componentDidUpdate() {
 
                 Animated.spring(            //Step 1
                     elem.location,         //Step 2
-                    {toValue: {x: TILE_WIDTH*i,y: TILE_WIDTH*j} }     //Step 3
+                    {toValue: {x: TILE_WIDTH*i,y: TILE_WIDTH*j},friction: 6}     //Step 3
                 ).start()
 
-                Animated.timing(elem.scale,{toValue: 1,duration: 500}).start()
+                //Animated.timing(elem.scale,{toValue: 1,duration: 1000}).start()
             })
     })
 
   }
 
 
-    processNewMatch(neighbors) {
+    recolorMatches(data,neighbors) {
 
-      this.setState((previousState) => {
 
-        var x = previousState.tileDataSource.map((row,i) => {
+        var x = data.map((row,i) => {
 
           let y = row.map((e,j) => {
 
@@ -508,11 +572,11 @@ componentDidUpdate() {
 
             let randIndex = this.getRandomInt(7)
 
-            let element = [i,j]
+            /// Not needed? let element = [i,j]
 
-            let x = neighbors.filter(e => {return (i==e[0] && j==e[1])})
+            let n = neighbors.filter(e => {return (i==e[0] && j==e[1])})
 
-            if (x.length != 0)
+            if (n.length != 0)
             {
               e.setView(beans[randIndex])
               return e
@@ -524,7 +588,7 @@ componentDidUpdate() {
 
           return y})
 
-        return {tileDataSource: x}})
+          return x
 
 }
 
@@ -537,11 +601,14 @@ componentDidUpdate() {
         directionalOffsetThreshold: 80
       };
 
+      // Only swipe if cancel touches is false.
+      let swipeOrNot = cancelTouches ? (direction,state) => {return} : (direction,state)=> this.onSwipe(direction,state)
+
       return (
           <View style = {styles.container} onLayout = {this.onLayout.bind(this)} >
               <View>
                 <GestureRecognizer config = {config} style = {styles.gestureContainer}
-                  onSwipe = {(direction, state) => this.onSwipe(direction, state)}>
+                  onSwipe = {(direction, state) => swipeOrNot(direction,state)}>
                       {this.state.tileComponents}
                 </GestureRecognizer>
               </View>
@@ -580,14 +647,18 @@ let styles = StyleSheet.create({
       flex: 1,
       alignItems: 'center'
     },
-
+    button: {
+      width: 200,
+      height: 50,
+      backgroundColor: red
+    },
     gestureContainer: {
       flex: 1,
     },
     container: {
       width: TILE_WIDTH*5,
       height: TILE_WIDTH*5,
-      backgroundColor: red,
+      //backgroundColor: red,
 
 },
     tile      : {

@@ -2,6 +2,8 @@ import ImageTypes from '../components/ImageTypes';
 
 
 
+
+
   export const  getJamJarFromBean = (bean) => {
 
     switch(bean) {

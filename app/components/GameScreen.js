@@ -31,7 +31,7 @@ let justClouds = require('../assets/CloudsBackground.png')
 let backButton = require('../assets/GreenBackButton.png')
 let RedJam = require('../assets/RedJam.png')
 let tuffysCartoonHead = require('../assets/TuffyTile.png')
-
+let rowOfJam = require('../assets/JarsOfJam.png')
 
 class GameScreen extends Component  {
   constructor(props) {
@@ -90,6 +90,7 @@ class GameScreen extends Component  {
                       <Image style = {styles.tuffysHead} source = {ImageTypes.CARTOONTUFFY} />
               </Animated.View>
           </View>
+          <Image style = {styles.rowOfJam} source = {rowOfJam}/>
     </ImageBackground>
   }
 
@@ -97,7 +98,7 @@ class GameScreen extends Component  {
 
 let Window = Dimensions.get('window');
 let windowSpan = Math.min(Window.width,Window.height)
-let colored = true
+let colored = false
 let TILE_WIDTH = windowSpan/6;
 
 let windowWidth = Window.width
@@ -127,7 +128,7 @@ let styles = StyleSheet.create({
     {
       flex: 1,
       flexDirection: 'column',
-      backgroundColor: pink
+      //backgroundColor: pink
     },
     gridContainer: {
         flex: 1,
@@ -138,7 +139,7 @@ let styles = StyleSheet.create({
     topBar: {
       marginTop: 50,
       height: 75,
-      backgroundColor: yellow
+      //backgroundColor: yellow
     },
     backButton: {
       marginTop: 30,
@@ -151,16 +152,20 @@ let styles = StyleSheet.create({
         marginLeft  : 5,
         marginRight : 5,
         textAlign   : 'center',
-        color       : '#fff'
+        //color       : '#fff'
     },
     container: {
     height: 350,
     width:  350,
-    backgroundColor:'#2c3e50'
+    //backgroundColor:'#2c3e50'
 },
   tuffysHead      : {
       height: 100,
       width: 100,
+    },
+    rowOfJam: {
+      width: 400,
+      height: 50
     }
 });
 
