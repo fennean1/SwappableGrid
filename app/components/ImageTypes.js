@@ -18,7 +18,7 @@ let CartoonTuffy = require('../assets/TuffyTile.png')
 
 
 
-var imageType = {
+const imageType = {
   PINKJELLYBEAN: pjb,
   PURPLEJELLYBEAN: prjb,
   BLUEJELLYBEAN: bjb,

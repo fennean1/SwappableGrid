@@ -40,6 +40,7 @@ const instructions = Platform.select({
 
 import imageType from '../components/ImageTypes';
 
+import {getJamJarFromBean,isJam} from '../components/JamFunctions';
 
 let firstLoad = true
 
@@ -61,7 +62,6 @@ class TileData {
     this.view = <Image source={img} style = {styles.tile}/>
 
   }
-
 
     setView(imageType) {
 
@@ -97,7 +97,6 @@ export default class Swappables extends Component<{}> {
 
     }
 
-
     getRandomInt(max) {
       return Math.floor(Math.random() * Math.floor(max));
     }
@@ -110,7 +109,6 @@ export default class Swappables extends Component<{}> {
     let initialGestureY = gestureState.y0
 
     // Need to get convert location of swipe to an index.
-
 
     let i = Math.round((initialGestureX-this.state.origin[0]-0.5*TILE_WIDTH)/TILE_WIDTH)
     let j = Math.round((initialGestureY-this.state.topMargin-this.state.origin[1]-0.5*TILE_WIDTH)/TILE_WIDTH)
@@ -221,9 +219,7 @@ export default class Swappables extends Component<{}> {
       for (var n  = 0; n < neighborsLength; n++) {
 
       if (neighbors[n].imageType == tileDataSource[i][j].imageType) {
-
           hasANeighbor = true
-
       }
 
     }
@@ -234,13 +230,13 @@ export default class Swappables extends Component<{}> {
 
 
 
-pushTileDataToComponent() {
+pushTileDataToComponent(data) {
 
   console.log("Pushing Tile Data")
 
   var a = []
   // This creates the array of Tile components that is stored as a state variable
-  this.state.tileDataSource.map((row,i) => {
+  data.map((row,i) => {
 
     let rows = row.map((e,j) => {
 
@@ -258,7 +254,12 @@ pushTileDataToComponent() {
 
 }
 
-  animateMatch(indexesToAnimate) {
+  animateMatch(indexesToAnimate,jarSpot,obj) {
+
+
+
+                  console.log("In animateMatch:jarSpot = ",jarSpot)
+                  let locationToAnimateTo = [jarSpot[0]*TILE_WIDTH,jarSpot[1]*TILE_WIDTH]
 
 
                   let len = indexesToAnimate.length
@@ -274,6 +275,7 @@ pushTileDataToComponent() {
                     Animated.delay(400),
                     Animated.timing(this.state.tileDataSource[i][j].scale,{toValue: 1.1,duration: 200}),
                     Animated.timing(this.state.tileDataSource[i][j].scale,{toValue: 1,duration: 200}),
+                    Animated.timing(this.state.tileDataSource[i][j].location,{toValue: {x: locationToAnimateTo[0],y:locationToAnimateTo[1]},duration: 100})
                     ],
                   ).start(() => {
 
@@ -317,7 +319,6 @@ condenseColumns(data,beanIndexes){
     // Iterate through each column
     for (let j = 4; j>=0;j--){
 
-
       let n = beanIndexes.filter(e => {return (i==e[0] && j==e[1])})
 
       // Check to see if the element is a spot that needs filling.
@@ -355,26 +356,47 @@ animateJamJar() {
 
 }
 
+  feedTuffy(jarIndexes){
+
+    console.log("Feeding Tuffy!")
+
+    jarIndexes.map((e,i) => {
+
+          let x = e[0]
+          let y = e[1]
+
+          console.log('x=',x)
+          console.log('y=',y)
+
+          Animated.spring(            //Step 1
+              this.state.tileDataSource[x][y].location,         //Step 2
+              {toValue: {x: -100,y: -100},friction: 6}     //Step 3
+          ).start()
+
+
+    })
+
+  }
+
+  // Handles swipe events
   updateGrid(i,j,dx,dy) {
 
-        speed = 700
 
-          let doesTheStartColorAllHaveNeighbors = false
-          let doesTheEndColorAllHaveNeighbors = false
-          let indexesWithStarterColor = [[]]
-          let indexesWithEnderColor = [[]]
-          var jamToJam = imageType.REDJAM
-
+            let doesTheStartColorAllHaveNeighbors = false
+            let doesTheEndColorAllHaveNeighbors = false
+            let indexesWithStarterColor = [[]]
+            let indexesWithEnderColor = [[]]
+            var jamToJam = imageType.REDJAM
 
             const newData = this.state.tileDataSource
+
+            console.log("In upDateGrid, tileDataSource before swap =",this.state.tileDataSource)
 
             const swapStarter = this.state.tileDataSource[i][j]
             const swapEnder = this.state.tileDataSource[i+dx][j+dy]
 
-
             const firstJamToJam = this.state.tileDataSource[i][j].imageType
             const secondJamToJam = this.state.tileDataSource[i+dx][j+dy].imageType
-
 
             newData[i][j] = swapEnder
             newData[i+dx][j+dy] = swapStarter
@@ -386,43 +408,52 @@ animateJamJar() {
             doesTheStartColorAllHaveNeighbors = this.allHaveNeighbors(indexesWithStarterColor)
             doesTheEndColorAllHaveNeighbors = this.allHaveNeighbors(indexesWithEnderColor)
 
-            this.animateValuesToLocations()
+            let consecutiveJamIndexes = this.consecutiveJams(this.state.tileDataSource)
+
+            // consecutiveJams returns to empty arrays when no jam is found. In fact, it always
+            // returns two expty arrays. Should look into this.
+            if (consecutiveJamIndexes.length != 0) {
+              this.feedTuffy(consecutiveJamIndexes)
+              indexesWithStarterColor = consecutiveJamIndexes
+            }
+            else{
+              this.animateValuesToLocations()
+            }
 
 
             // Kinda clunky but it works.
-            if (doesTheStartColorAllHaveNeighbors) {
+            if (doesTheStartColorAllHaveNeighbors || consecutiveJamIndexes.length > 2) {
 
+              let jarSpot = [i+dx,j+dy]
 
+              let jar = getJamJarFromBean(firstJamToJam)
 
-              let data = []
+              this.animateMatch(indexesWithStarterColor,jarSpot,firstJamToJam)
 
-              //this.props.bounceHead(secondJamToJam)
+              let data = this.state.tileDataSource
 
-              this.animateMatch(indexesWithStarterColor)
+              data = this.recolorMatches(data,indexesWithStarterColor)
 
-              data = this.recolorMatches(this.state.tileDataSource,indexesWithStarterColor)
+              setTimeout(() => {
 
+                console.log("In setTimout in upDateGrid indexesWithStarterColor = ",indexesWithStarterColor)
 
-              setTimeout(() => {data = this.condenseColumns(this.state.tileDataSource,indexesWithStarterColor)
-                    this.setState({tileData: data})
-                  this.pushTileDataToComponent()
+                data = this.condenseColumns(this.state.tileDataSource,indexesWithStarterColor)
+                if(!isJam(firstJamToJam)){
+                    this.state.tileDataSource[i+dx][j+dy].setView(jar)
+                }
 
+                this.pushTileDataToComponent(data)
                 this.animateValuesToLocations()},1200)
 
-
-
-
-
-
-       }
+            }
             else if (doesTheStartColorAllHaveNeighbors)
             {
                 // Do nothing for now.
-
-              }
-              else {
+            }
+            else {
                 cancelTouches = false
-              }
+            }
 
 
 
@@ -472,7 +503,10 @@ componentDidUpdate() {
 
           let dataRows = row.map((key,j) => {
 
-            let beans = [imageType.BLUEJELLYBEAN,imageType.PINKJELLYBEAN,imageType.PURPLEJELLYBEAN,imageType.YELLOWJELLYBEAN,imageType.ORANGEJELLYBEAN,imageType.GREENJELLYBEAN,imageType.REDJELLYBEAN]
+            let beans = [imageType.BLUEJELLYBEAN,imageType.PINKJELLYBEAN,imageType.PURPLEJELLYBEAN,
+              imageType.YELLOWJELLYBEAN,imageType.ORANGEJELLYBEAN,imageType.GREENJELLYBEAN,imageType.REDJELLYBEAN,
+            imageType.REDJAM,imageType.BLUEJAM,imageType.ORANGEJAM,imageType.PURPLEJAM, imageType.GREENJAM,imageType.PINKJAM,
+          imageType.PURPLEJAM,imageType.YELLOWJAM]
 
             let randIndex = this.getRandomInt(7)
 
@@ -520,6 +554,80 @@ componentDidUpdate() {
 
     }
 
+consecutiveJams(){
+
+      let data = this.state.tileDataSource
+
+      let horizontalJams = 0
+
+      let columnsOfJam = 0
+
+      let rowsequencesOfJam = [[]]
+
+      let colsequencesOfJam = [[]]
+
+      let rowsequenceToAdd = []
+
+      let colsequenceToAdd = []
+
+        for (i=0;i<5;i++)  {
+          for (j=0;j<5;j++) {
+
+          //Find all columns
+          if (isJam(data[i][j].imageType)) {
+              horizontalJams++
+              rowsequenceToAdd.push([i,j])
+          }
+          else {
+
+           if (horizontalJams >= 3) {
+                rowsequencesOfJam.push(rowsequenceToAdd)
+              }
+                horizontalJams = 0
+                rowsequenceToAdd = []
+            }
+
+
+          //Find all rows
+          if (isJam(data[j][i].imageType)) {
+              columnsOfJam++
+              colsequenceToAdd.push([j,i])
+          }
+          else {
+
+           if (columnsOfJam >= 3) {
+                colsequencesOfJam.push(colsequenceToAdd)
+              }
+                columnsOfJam = 0
+                colsequenceToAdd = []
+          }
+
+
+        }
+      }
+
+      let filteredTotal = []
+
+      let total = [...colsequencesOfJam,...rowsequencesOfJam]
+
+      console.log("This is the total inside consecutiveJams before filtering",total)
+
+      for (i=0;i<total.length;i++){
+        if (total[i].length != 0){
+          for (j=0;j<total[i].length;j++){
+              filteredTotal.push(total[i][j])
+          }
+        }
+      }
+
+      console.log("This is the filteredTotal inside consecutiveJams",filteredTotal)
+
+    return filteredTotal
+
+  }
+
+
+
     // Gets all indexes with a specific color.
     getIndexesWithColor(color) {
 
@@ -532,7 +640,6 @@ componentDidUpdate() {
                 if (e.imageType == color) {
                   colorIndexes.push([i,j])
                 }
-
               })
 
         })
@@ -553,7 +660,6 @@ componentDidUpdate() {
                     elem.location,         //Step 2
                     {toValue: {x: TILE_WIDTH*i,y: TILE_WIDTH*j},friction: 6}     //Step 3
                 ).start()
-
                 //Animated.timing(elem.scale,{toValue: 1,duration: 1000}).start()
             })
     })
@@ -563,16 +669,16 @@ componentDidUpdate() {
 
     recolorMatches(data,neighbors) {
 
-
         var x = data.map((row,i) => {
 
           let y = row.map((e,j) => {
 
-            let beans = [imageType.BLUEJELLYBEAN,imageType.PINKJELLYBEAN,imageType.PURPLEJELLYBEAN,imageType.YELLOWJELLYBEAN,imageType.ORANGEJELLYBEAN,imageType.GREENJELLYBEAN,imageType.REDJELLYBEAN]
+            let beans = [imageType.BLUEJELLYBEAN,imageType.PINKJELLYBEAN,imageType.PURPLEJELLYBEAN,
+              imageType.YELLOWJELLYBEAN,imageType.ORANGEJELLYBEAN,imageType.GREENJELLYBEAN,imageType.REDJELLYBEAN,
+            imageType.REDJAM,imageType.BLUEJAM,imageType.ORANGEJAM,imageType.PURPLEJAM, imageType.GREENJAM,imageType.PINKJAM,
+          imageType.PURPLEJAM,imageType.YELLOWJAM]
 
             let randIndex = this.getRandomInt(7)
-
-            /// Not needed? let element = [i,j]
 
             let n = neighbors.filter(e => {return (i==e[0] && j==e[1])})
 
@@ -601,7 +707,7 @@ componentDidUpdate() {
         directionalOffsetThreshold: 80
       };
 
-      // Only swipe if cancel touches is false.
+      // Only swipe if cancelTouches is false.
       let swipeOrNot = cancelTouches ? (direction,state) => {return} : (direction,state)=> this.onSwipe(direction,state)
 
       return (
@@ -659,7 +765,6 @@ let styles = StyleSheet.create({
       width: TILE_WIDTH*5,
       height: TILE_WIDTH*5,
       //backgroundColor: red,
-
 },
     tile      : {
       width               : TILE_WIDTH,
