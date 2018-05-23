@@ -64,22 +64,26 @@ class TileData {
   }
 
     setView(imageType) {
-
           this.imageType = imageType
           this.view = <Image source={imageType} style = {styles.tile}/>
-
     }
-
-
 }
 
-var cancelTouches = false
 
+const animationType = {
+  SWAP: 0,
+  FALL: 1
+};
+
+var cancelTouches = false
 
 export default class Swappables extends Component<{}> {
 
   constructor(props){
       super(props);
+
+      this.speed = 100
+      this.animationState = animationType.SWAP
 
       this.state = {
           origin: [0,0],
@@ -220,6 +224,9 @@ export default class Swappables extends Component<{}> {
 
       if (neighbors[n].imageType == tileDataSource[i][j].imageType) {
           hasANeighbor = true
+      }
+      else if (isJam(neighbors[n].imageType) && isJam(tileDataSource[i][j].imageType)){
+        hasANeighbor = true
       }
 
     }
@@ -390,8 +397,6 @@ animateJamJar() {
 
             const newData = this.state.tileDataSource
 
-            console.log("In upDateGrid, tileDataSource before swap =",this.state.tileDataSource)
-
             const swapStarter = this.state.tileDataSource[i][j]
             const swapEnder = this.state.tileDataSource[i+dx][j+dy]
 
@@ -401,28 +406,19 @@ animateJamJar() {
             newData[i][j] = swapEnder
             newData[i+dx][j+dy] = swapStarter
 
-
             indexesWithStarterColor = this.getIndexesWithColor(firstJamToJam)
             indexesWithEnderColor = this.getIndexesWithColor(secondJamToJam)
 
+
+            // Should be indexes with starter
             doesTheStartColorAllHaveNeighbors = this.allHaveNeighbors(indexesWithStarterColor)
             doesTheEndColorAllHaveNeighbors = this.allHaveNeighbors(indexesWithEnderColor)
 
-            let consecutiveJamIndexes = this.consecutiveJams(this.state.tileDataSource)
-
-            // consecutiveJams returns to empty arrays when no jam is found. In fact, it always
-            // returns two expty arrays. Should look into this.
-            if (consecutiveJamIndexes.length != 0) {
-              this.feedTuffy(consecutiveJamIndexes)
-              indexesWithStarterColor = consecutiveJamIndexes
-            }
-            else{
-              this.animateValuesToLocations()
-            }
 
 
             // Kinda clunky but it works.
-            if (doesTheStartColorAllHaveNeighbors || consecutiveJamIndexes.length > 2) {
+            if (doesTheStartColorAllHaveNeighbors) {
+
 
               let jarSpot = [i+dx,j+dy]
 
@@ -438,13 +434,19 @@ animateJamJar() {
 
                 console.log("In setTimout in upDateGrid indexesWithStarterColor = ",indexesWithStarterColor)
 
+                this.animationState = animationType.FALL
+
                 data = this.condenseColumns(this.state.tileDataSource,indexesWithStarterColor)
                 if(!isJam(firstJamToJam)){
                     this.state.tileDataSource[i+dx][j+dy].setView(jar)
                 }
 
                 this.pushTileDataToComponent(data)
-                this.animateValuesToLocations()},1200)
+
+                this.animationState = animationType.SWAP
+
+
+                },1200)
 
             }
             else if (doesTheStartColorAllHaveNeighbors)
@@ -489,7 +491,17 @@ componentDidUpdate() {
       // !!! Make this take a "Type" and perform an animation based on the
       // type of update that's occured. ie swipe, condense, load.
 
-      //this.animateValuesToLocations()
+      switch (this.animationState) {
+        case animationType.SWAP:
+          this.animateValuesToLocationsSwapStyle()
+        break;
+        case animationType.FALL:
+          this.animateValuesToLocationsWaterfalStyle()
+        break;
+      }
+
+
+
 
 }
 
@@ -533,7 +545,6 @@ componentDidUpdate() {
     componentDidMount()
     {
 
-
       var a = []
       // This creates the array of Tile components that is stored as a state variable
       this.state.tileDataSource.map((row,i) => {
@@ -550,7 +561,6 @@ componentDidUpdate() {
 
         this.setState({tileComponents: a})
 
-        this.animateValuesToLocations()
 
     }
 
@@ -601,8 +611,6 @@ consecutiveJams(){
                 columnsOfJam = 0
                 colsequenceToAdd = []
           }
-
-
         }
       }
 
@@ -612,6 +620,7 @@ consecutiveJams(){
 
       console.log("This is the total inside consecutiveJams before filtering",total)
 
+      // Double Check this
       for (i=0;i<total.length;i++){
         if (total[i].length != 0){
           for (j=0;j<total[i].length;j++){
@@ -626,8 +635,6 @@ consecutiveJams(){
 
   }
 
-
-
     // Gets all indexes with a specific color.
     getIndexesWithColor(color) {
 
@@ -640,6 +647,10 @@ consecutiveJams(){
                 if (e.imageType == color) {
                   colorIndexes.push([i,j])
                 }
+                else if (isJam(e.imageType) && isJam(color))
+                {
+                  colorIndexes.push([i,j])
+                }
               })
 
         })
@@ -647,24 +658,38 @@ consecutiveJams(){
       }
 
 
-
-
     // Animates the values in the tile data source based on their index in the array.
-    animateValuesToLocations()
+    animateValuesToLocationsSwapStyle()
     {
             this.state.tileDataSource.map((row,i)=> {
 
               row.map((elem,j) => {
 
-                Animated.spring(            //Step 1
+                Animated.timing(            //Step 1
                     elem.location,         //Step 2
-                    {toValue: {x: TILE_WIDTH*i,y: TILE_WIDTH*j},friction: 6}     //Step 3
+                    {toValue: {x: TILE_WIDTH*i,y: TILE_WIDTH*j},duration: this.speed}     //Step 3
                 ).start()
                 //Animated.timing(elem.scale,{toValue: 1,duration: 1000}).start()
             })
     })
-
   }
+
+  // Animates the values in the tile data source based on their index in the array.
+  animateValuesToLocationsWaterfalStyle()
+  {
+          this.state.tileDataSource.map((row,i)=> {
+
+            row.map((elem,j) => {
+
+              Animated.spring(            //Step 1
+                  elem.location,         //Step 2
+                  {toValue: {x: TILE_WIDTH*i,y: TILE_WIDTH*j},friction: 4}     //Step 3
+              ).start()
+              //Animated.timing(elem.scale,{toValue: 1,duration: 1000}).start()
+          })
+  })
+
+}
 
 
     recolorMatches(data,neighbors) {

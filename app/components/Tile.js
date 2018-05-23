@@ -52,13 +52,35 @@ export default class Draggable extends Component<{}> {
           end: new Animated.ValueXY,
           view: this.props.subviews
       };
+
+
+        this.panResponder = PanResponder.create({
+
+                    onPanResponderGrant: (e, gestureState) => {
+
+                      let nE = e.nativeEvent
+
+                      console.log('this is the native event X and Y location on grant.',nE.locationX,nE.locationY)
+                      console.log('this is the x._value on Grant',this.props.spots.x._value)
+                      console.log('this is the y._value on Grant',this.props.spots.y._value)
+
+                      // Set the initial value to the current state
+                      //this.props.spots.setOffset({x: this.props.spots.x._value, y: this.props.spots.y._value});
+                      //this.props.spots.setValue({x: 0, y: 0});
+
+                      Animated.spring(this.state.scale, {toValue: 1.2, friction: 1}).start();
+
+                    },
+
+      })
     }
+
 
   render(){
 
 
 
-    let scale = this.props.scale;
+    let scale = this.state.scale;
 
 
       let [translateX, translateY] = [this.props.location.x, this.props.location.y];
@@ -69,7 +91,7 @@ export default class Draggable extends Component<{}> {
         // The coordinates of the view will transform to the 'prop' location and locationc
 
 
-        <Animated.View style = {[{transform: [{translateX}, {translateY},{scale}]}]} >
+        <Animated.View style = {[{transform: [{translateX}, {translateY},{scale}]}]} {...this.panResponder.panHandlers} >
                 {this.props.subview}
           </Animated.View>
 
