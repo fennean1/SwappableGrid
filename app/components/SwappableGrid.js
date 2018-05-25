@@ -56,6 +56,7 @@ class TileData {
     this.key = key;
     this.location = new Animated.ValueXY();
     this.imageType = img;
+    this.rotation = new Animated.Value(0);
     this.scale = new Animated.Value(1);
     this.view = <Image source={img} style={styles.tile} />;
   }
@@ -157,6 +158,7 @@ export default class Swappables extends Component<{}> {
 
   // Determines if the tile at location i,j has a neighbor of the same color.
   hasNeighbor(i, j) {
+    // Tile data source dependency
     var { tileDataSource } = this.state;
 
     let hasANeighbor = false;
@@ -188,9 +190,12 @@ export default class Swappables extends Component<{}> {
 
     // Checking for edge cases.
     for (let m = 0; m < spotsLength; m++) {
+      // Spots tells us which neighbors are available to check based on edge cases.
+      // If it's zero, that means that that particular spot lands is not valid and we should not check it.
       if (spots[m] != 0) {
         // left
         if (m == 0) {
+          // Push the left tile to the array of spots to check.
           neighbors.push(tileDataSource[i - 1][j]);
         }
         // right
@@ -223,18 +228,20 @@ export default class Swappables extends Component<{}> {
     return hasANeighbor;
   }
 
-  pushTileDataToComponent(data) {
+  // data - the array of
+  pushTileDataToComponent(tileData) {
     console.log("Pushing Tile Data");
 
     var a = [];
-    // This creates the array of Tile components that is stored as a state variable
-    data.map((row, i) => {
+    // This creates the array of Tile components that is stored as a state variable.
+    tileData.map((row, i) => {
       let rows = row.map((e, j) => {
         a.push(
           <Tile
             location={e.location}
             scale={e.scale}
             key={e.key}
+            rotation={e.rotation}
             subview={e.view}
           />
         );
@@ -250,11 +257,11 @@ export default class Swappables extends Component<{}> {
     });
   }
 
-  animateMatch(indexesToAnimate, jarSpot, obj) {
-    console.log("In animateMatch:jarSpot = ", jarSpot);
+  // takes the indexes that will be animated and
+  animateMatch(indexesToAnimate, location) {
     let locationToAnimateTo = [
-      jarSpot[0] * TILE_WIDTH,
-      jarSpot[1] * TILE_WIDTH
+      location[0] * TILE_WIDTH,
+      location[1] * TILE_WIDTH
     ];
 
     let len = indexesToAnimate.length;
@@ -277,14 +284,10 @@ export default class Swappables extends Component<{}> {
         }),
         Animated.timing(this.state.tileDataSource[i][j].location, {
           toValue: { x: locationToAnimateTo[0], y: locationToAnimateTo[1] },
-          duration: 100
+          duration: this.speed
         })
       ]).start(() => {});
     }
-
-    setTimeout(() => {
-      cancelTouches = false;
-    }, 100);
   }
 
   // Completes the rendering logic for the JamJar component. DEPRECATED
@@ -297,7 +300,6 @@ export default class Swappables extends Component<{}> {
 
     let jar = (
       <View style={styles.jamJarWrapper}>
-        {" "}
         <Animated.View style={{ transform: [scale] }}>
           <Image source={imageType.REDJAM} style={styles.jamJar} />
         </Animated.View>
@@ -347,13 +349,6 @@ export default class Swappables extends Component<{}> {
     }
 
     return dataArray;
-  }
-
-  animateJamJar() {
-    Animated.parallel([
-      Animated.spring(this.state.JamJarScaleY, { toValue: 1.2, friction: 1 }),
-      Animated.spring(this.state.JamJarScaleX, { toValue: 1.2, friction: 1 })
-    ]).start();
   }
 
   feedTuffy(jarIndexes) {
@@ -410,12 +405,21 @@ export default class Swappables extends Component<{}> {
 
       let jar = getJamJarFromBean(firstJamToJam);
 
-      this.animateMatch(indexesWithStarterColor, jarSpot, firstJamToJam);
+      // Only animate tuffy's head if we're dealing with Jam
+      if (isJam(firstJamToJam)) {
+        this.props.animateTuffysHead();
+        // TODO: Make sure this isn't HARDCODED and that the jar goes to the right spot.
+        jarSpot = [2, 8];
+      }
+
+      this.animateMatch(indexesWithStarterColor, jarSpot);
 
       let data = this.state.tileDataSource;
 
+      // Recolor the matches with new random colors.
       data = this.recolorMatches(data, indexesWithStarterColor);
 
+      // Waits for "animate match" to complete.
       setTimeout(() => {
         console.log(
           "In setTimout in upDateGrid indexesWithStarterColor = ",
@@ -475,7 +479,7 @@ export default class Swappables extends Component<{}> {
   }
 
   componentWillMount() {
-    // Really dumb grid - does not need to have any values. Just so we can run map.
+    // Grid that contains the keys that will be assigned to each tile via map
     let keys = [
       [0, 1, 2, 3, 4],
       [5, 6, 7, 8, 9],
@@ -520,7 +524,7 @@ export default class Swappables extends Component<{}> {
   onLayout(event) {
     console.log("onLayout event", event.nativeEvent);
 
-    // Why is this not giving me the correct layout props? This -2 is just a hack to make it work.
+    // This does not need to be a state variable
     this.setState({
       origin: [event.nativeEvent.layout.x, event.nativeEvent.layout.y]
     });
@@ -789,6 +793,9 @@ checkRowColForMatch(grid,coordinates){
 let Window = Dimensions.get("window");
 let windowSpan = Math.min(Window.width, Window.height);
 let TILE_WIDTH = windowSpan / 6;
+
+let windowWidth = Window.width;
+let windowHeight = Window.height;
 
 let blue = "#4286f4";
 let red = "#f24646";

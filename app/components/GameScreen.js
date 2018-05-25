@@ -34,39 +34,46 @@ let rowOfJam = require("../assets/JarsOfJam.png");
 class GameScreen extends Component {
   constructor(props) {
     super(props);
+
+    this.tuffysHeadHeight = 50;
+
     this.state = {
       topMargin: 125,
-      tuffysHeadScale: new Animated.Value(0),
+      tuffysHeadScale: new Animated.Value(1),
       tuffysHeadLocation: new Animated.ValueXY(0, 0),
       jam: ImageTypes.REDJAM
     };
   }
 
-  animateTuffysHead(jamType) {
-    let x = getJamJarFromBean(jamType);
-
-    this.setState({ jam: x });
-
+  animateTuffysHead() {
     Animated.sequence([
-      Animated.delay(200),
-      Animated.spring(this.state.tuffysHeadScale, {
-        toValue: 2,
-        friction: 3,
-        duration: 1200
+      Animated.delay(100),
+      Animated.spring(this.state.tuffysHeadLocation.y, {
+        toValue: 0.1 * TILE_WIDTH,
+        friction: 5,
+        duration: 1000
       }),
-      Animated.timing(this.state.tuffysHeadScale, {
-        toValue: 0,
+      Animated.timing(this.state.tuffysHeadLocation.y, {
+        toValue: TILE_WIDTH * 3,
         friction: 10,
         duration: 500
       })
     ]).start();
   }
 
+  // Old Redux Stuff - will need this later.
   addRecipe() {
     console.log("this.props", this.props);
     console.log("hello is thing on??");
 
     //this.props.myProps.addRecipe()
+  }
+
+  componentDidMount() {
+    this.state.tuffysHeadLocation.setValue({
+      x: TILE_WIDTH * 1.5,
+      y: 2 * TILE_WIDTH
+    });
   }
 
   render() {
@@ -76,6 +83,7 @@ class GameScreen extends Component {
       this.state.tuffysHeadLocation.x,
       this.state.tuffysHeadLocation.y
     ];
+
     let scale = this.state.tuffysHeadScale;
 
     return (
@@ -85,17 +93,18 @@ class GameScreen extends Component {
           <View style={styles.gridContainer}>
             <SwappableGrid
               topMargin={this.state.topMargin}
-              bounceHead={this.animateTuffysHead.bind(this)}
+              animateTuffysHead={this.animateTuffysHead.bind(this)}
             />
           </View>
         </View>
-        <View style={styles.footer}>
-          <Animated.View
-            style={[{ transform: [{ translateX }, { translateY }, { scale }] }]}
-          >
-            <Image style={styles.tuffysHead} source={ImageTypes.CARTOONTUFFY} />
-          </Animated.View>
-        </View>
+        <Animated.View
+          style={[{ transform: [{ translateX }, { translateY }, { scale }] }]}
+        >
+          <Image
+            style={styles.tuffysHead}
+            source={ImageTypes.TOPOFTUFFYSHEAD}
+          />
+        </Animated.View>
       </ImageBackground>
     );
   }
@@ -162,8 +171,8 @@ let styles = StyleSheet.create({
     //backgroundColor:'#2c3e50'
   },
   tuffysHead: {
-    height: 100,
-    width: 100
+    height: 2 * TILE_WIDTH,
+    width: 3 * TILE_WIDTH
   },
   rowOfJam: {
     width: 400,

@@ -80,8 +80,6 @@ export default class Draggable extends Component<{}> {
       this.props.location.y
     ];
 
-    console.log("HELLO! The render function of Tile has been called!");
-
     return (
       // The coordinates of the view will transform to the 'prop' location and locationc
 

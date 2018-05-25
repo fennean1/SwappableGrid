@@ -14,6 +14,7 @@ let PinkJam = require("../assets/PinkJam.png");
 let PurpleJam = require("../assets/PurpleJam.png");
 let floatingClouds = require("../assets/FloatingClouds.png");
 let CartoonTuffy = require("../assets/TuffyTile.png");
+let TopOfTuffysHead = require("../assets/TopOfTuffysHead.png");
 
 const imageType = {
   PINKJELLYBEAN: pjb,
@@ -30,7 +31,8 @@ const imageType = {
   PINKJAM: PinkJam,
   ORANGEJAM: OrangeJam,
   YELLOWJAM: YellowJam,
-  CARTOONTUFFY: CartoonTuffy
+  CARTOONTUFFY: CartoonTuffy,
+  TOPOFTUFFYSHEAD: TopOfTuffysHead
 };
 
 export const getJamJarFromBean = bean => {
