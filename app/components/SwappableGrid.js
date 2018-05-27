@@ -72,14 +72,23 @@ const animationType = {
   FALL: 1
 };
 
+const rowOrCol = {
+  ROW: 0,
+  COLUMN: 1
+};
+
 var cancelTouches = false;
 
 export default class Swappables extends Component<{}> {
   constructor(props) {
     super(props);
 
+    // Inititalize to swipe up, will change later.
+    this.swipeDirection = swipeDirections.SWIPE_UP;
     this.speed = 100;
     this.animationState = animationType.SWAP;
+    this.currentDirection = rowOrCol.ROW;
+    this.otherDirection = rowOrCol.COLUMN;
 
     this.state = {
       origin: [0, 0],
@@ -121,11 +130,14 @@ export default class Swappables extends Component<{}> {
 
     const { SWIPE_UP, SWIPE_DOWN, SWIPE_LEFT, SWIPE_RIGHT } = swipeDirections;
     this.setState({ gestureName: gestureName });
+
+    //  TODO: Make sure that the boundary conditions 0 and 4 aren't HARDCODED
     switch (gestureName) {
       case SWIPE_UP:
         console.log("An upward swipe has been registered");
 
         if (j > 0) {
+          this.swipeDirection = SWIPE_UP;
           this.updateGrid(i, j, 0, -1);
         }
 
@@ -134,6 +146,7 @@ export default class Swappables extends Component<{}> {
         console.log("A downward swipe has been registered");
 
         if (j < 4) {
+          this.swipeDirection = SWIPE_DOWN;
           this.updateGrid(i, j, 0, 1);
         }
 
@@ -142,6 +155,7 @@ export default class Swappables extends Component<{}> {
         console.log("A left swipe has been registered");
 
         if (i > 0) {
+          this.swipeDirection = SWIPE_LEFT;
           this.updateGrid(i, j, -1, 0);
         }
 
@@ -150,6 +164,7 @@ export default class Swappables extends Component<{}> {
         console.log("A right swipe has been registered");
 
         if (i < 4) {
+          this.swipeDirection = SWIPE_RIGHT;
           this.updateGrid(i, j, 1, 0);
         }
         break;
@@ -371,6 +386,16 @@ export default class Swappables extends Component<{}> {
 
   // Handles swipe events
   updateGrid(i, j, dx, dy) {
+    console.log("Swipe direction?", this.swipeDirection);
+
+    if (dx == 0) {
+      this.currentDirection = rowOrCol.COLUMN;
+      this.otherDirection = rowOrCol.ROW;
+    } else if (dy == 0) {
+      this.currentDirection = rowOrCol.ROW;
+      this.otherDirection = rowOrCol.COLUMN;
+    }
+
     let doesTheStartColorAllHaveNeighbors = false;
     let doesTheEndColorAllHaveNeighbors = false;
     let indexesWithStarterColor = [[]];
@@ -391,25 +416,50 @@ export default class Swappables extends Component<{}> {
     indexesWithStarterColor = this.getIndexesWithColor(firstJamToJam);
     indexesWithEnderColor = this.getIndexesWithColor(secondJamToJam);
 
-    // Should be indexes with starter
+    /*
     doesTheStartColorAllHaveNeighbors = this.allHaveNeighbors(
       indexesWithStarterColor
     );
     doesTheEndColorAllHaveNeighbors = this.allHaveNeighbors(
       indexesWithEnderColor
     );
+    */
+
+    let firstMatchIndexes = this.checkRowColForMatch(
+      [i, j],
+      this.currentDirection
+    );
+    let secondMatchIndexes = this.checkRowColForMatch(
+      [i, j],
+      this.otherDirection
+    );
+    let thirdMatchIndexes = this.checkRowColForMatch(
+      [i + dx, j + dy],
+      this.otherDirection
+    );
+
+    let matchIndexes = [
+      ...firstMatchIndexes,
+      ...secondMatchIndexes,
+      ...thirdMatchIndexes
+    ];
+
+    console.log("match indexes to jam away", matchIndexes);
 
     // Kinda clunky but it works.
-    if (doesTheStartColorAllHaveNeighbors) {
+    if (matchIndexes.length != 0) {
       let jarSpot = [i + dx, j + dy];
 
+      indexesWithStarterColor = matchIndexes;
+
+      // Don't need this
       let jar = getJamJarFromBean(firstJamToJam);
 
       // Only animate tuffy's head if we're dealing with Jam
       if (isJam(firstJamToJam)) {
         this.props.animateTuffysHead();
         // TODO: Make sure this isn't HARDCODED and that the jar goes to the right spot.
-        jarSpot = [2, 8];
+        jarSpot = [0.5, 8];
       }
 
       this.animateMatch(indexesWithStarterColor, jarSpot);
@@ -553,56 +603,69 @@ export default class Swappables extends Component<{}> {
 
     this.setState({ tileComponents: a });
   }
-  /*
-checkRowColForMatch(grid,coordinates){
 
-  let width = grid.length
-  let height = grid[0].length
-
-  let checkRow = coordinates[0][0] == coordinates[0][1]
-  let checkColumn = coordinates[1][0] == coordinates[0][0]
-
-  isMatch(itemOne,itemTwo){
-    if (itemOne.color == itemTwo.color) {
-      return true
-    }
-    else if (isJam(itemOne) && isJam(itemTwo)){
-      return true
+  isMatch(itemOne, itemTwo) {
+    if (itemOne.imageType == itemTwo.imageType) {
+      return true;
+    } else if (isJam(itemOne.imageType) && isJam(itemTwo.imageType)) {
+      return true;
     }
   }
 
-  let consecutives = new Array()
+  checkRowColForMatch(coordinate, direction) {
+    let consecutives = [];
 
-    for (i = 0;i<width-1;i++){
+    for (i = 0; i < 4; i++) {
+      // If its a column,check the next item in the column
+      // Inistialize these to zero and then decide which one will be iterated and which will be held consant.
+      let x = 0;
+      let y = 0;
 
-      let x = i
-      let y = i
+      // Used to whether the next itme should be on the left or on the right.
+      let dx = 0;
+      let dy = 0;
 
-      if (checkRow){
-          x =
+      if (direction == rowOrCol.COLUMN) {
+        x = coordinate[0];
+        y = i;
+        dy = 1;
+      } else if (direction == rowOrCol.ROW) {
+        x = i;
+        dx = 1;
+        y = coordinate[1];
       }
 
-      let firstIitem = grid[x][y].color
-      let secondItem = grid[x][y+1].color
+      let firstItem = this.state.tileDataSource[x][y];
+      let nextItem = this.state.tileDataSource[x + dx][y + dy];
 
+      if (this.isMatch(firstItem, nextItem)) {
+        console.log("found a pair!", x, y);
+        consecutives.push([x, y]);
+        console.log("Consecutive indexes", consecutives);
 
-       if (isMatch(firstIitem,secondItem)) {
-         consecutives.push([x,y])
-       }
-       else {
-         if (consecutives.length >=3) {
-           return consecutives
-         }
-       }
+        // Check if I've reached the end of the loop.
+        if (i == 3) {
+          consecutives.push([x + dx, y + dy]);
+        }
+      } else {
+        // Push the last item in the sequence of matches
+        consecutives.push([x, y]);
+        if (consecutives.length >= 3) {
+          console.log("returning consecutives");
+          return consecutives;
+        } else {
+          // Reset
+          consecutives = [];
+        }
+      }
+    }
+
+    if (consecutives.length >= 3) {
+      return consecutives;
+    } else {
+      return [];
+    }
   }
-}
-*/
-
-  f(x) {
-    return x + 1;
-  }
-
-  makeToast() {}
 
   consecutiveJams() {
     let data = this.state.tileDataSource;
@@ -721,9 +784,9 @@ checkRowColForMatch(grid,coordinates){
   }
 
   recolorMatches(data, neighbors) {
-    var x = data.map((row, i) => {
+    let x = data.map((row, i) => {
       let y = row.map((e, j) => {
-        let beans = [
+        const beans = [
           imageType.BLUEJELLYBEAN,
           imageType.PINKJELLYBEAN,
           imageType.PURPLEJELLYBEAN,

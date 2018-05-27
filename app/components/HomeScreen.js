@@ -30,8 +30,6 @@ let tuffyCartoonHead = require("../assets/TuffysHead.png");
 class HomeScreen extends Component {
   constructor(props) {
     super(props);
-
-    this.state = { textTest: "Test" };
   }
 
   testRedux() {

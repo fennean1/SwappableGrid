@@ -36,12 +36,11 @@ class GameScreen extends Component {
     super(props);
 
     this.tuffysHeadHeight = 50;
+    this.topMargin = 125;
 
     this.state = {
-      topMargin: 125,
       tuffysHeadScale: new Animated.Value(1),
-      tuffysHeadLocation: new Animated.ValueXY(0, 0),
-      jam: ImageTypes.REDJAM
+      tuffysHeadLocation: new Animated.ValueXY(0, 0)
     };
   }
 
@@ -49,7 +48,7 @@ class GameScreen extends Component {
     Animated.sequence([
       Animated.delay(100),
       Animated.spring(this.state.tuffysHeadLocation.y, {
-        toValue: 0.1 * TILE_WIDTH,
+        toValue: 0.3 * TILE_WIDTH,
         friction: 5,
         duration: 1000
       }),
@@ -63,15 +62,12 @@ class GameScreen extends Component {
 
   // Old Redux Stuff - will need this later.
   addRecipe() {
-    console.log("this.props", this.props);
-    console.log("hello is thing on??");
-
     //this.props.myProps.addRecipe()
   }
 
-  componentDidMount() {
+  componentWillMount() {
     this.state.tuffysHeadLocation.setValue({
-      x: TILE_WIDTH * 1.5,
+      x: 0,
       y: 2 * TILE_WIDTH
     });
   }
@@ -86,25 +82,26 @@ class GameScreen extends Component {
 
     let scale = this.state.tuffysHeadScale;
 
+    let topOfTuffyComponent = (
+      <Animated.View
+        style={[{ transform: [{ translateX }, { translateY }, { scale }] }]}
+      >
+        <Image style={styles.tuffysHead} source={ImageTypes.TOPOFTUFFYSHEAD} />
+      </Animated.View>
+    );
+
     return (
       <ImageBackground source={justClouds} style={styles.backGroundImage}>
         <View style={styles.topBarAndGridContainer}>
           <View style={styles.topBar} />
           <View style={styles.gridContainer}>
             <SwappableGrid
-              topMargin={this.state.topMargin}
+              topMargin={this.topMargin}
               animateTuffysHead={this.animateTuffysHead.bind(this)}
             />
           </View>
         </View>
-        <Animated.View
-          style={[{ transform: [{ translateX }, { translateY }, { scale }] }]}
-        >
-          <Image
-            style={styles.tuffysHead}
-            source={ImageTypes.TOPOFTUFFYSHEAD}
-          />
-        </Animated.View>
+        {topOfTuffyComponent}
       </ImageBackground>
     );
   }
@@ -112,7 +109,7 @@ class GameScreen extends Component {
 
 let Window = Dimensions.get("window");
 let windowSpan = Math.min(Window.width, Window.height);
-let colored = false;
+let colored = true;
 let TILE_WIDTH = windowSpan / 6;
 
 let windowWidth = Window.width;
@@ -127,8 +124,7 @@ let pink = colored ? "#ff51f3" : "#ffffff";
 
 let styles = StyleSheet.create({
   footer: {
-    height: 200,
-    alignItems: "center"
+    height: 2 * TILE_WIDTH
     //backgroundColor: orange
   },
   backGroundImage: {
@@ -143,7 +139,6 @@ let styles = StyleSheet.create({
   },
   gridContainer: {
     flex: 1,
-    justifyContent: "center",
     alignItems: "center"
     //backgroundColor: blue
   },
@@ -173,10 +168,7 @@ let styles = StyleSheet.create({
   tuffysHead: {
     height: 2 * TILE_WIDTH,
     width: 3 * TILE_WIDTH
-  },
-  rowOfJam: {
-    width: 400,
-    height: 50
+    //backgroundColor: "#ffffff"
   }
 });
 
