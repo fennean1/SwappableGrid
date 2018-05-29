@@ -171,78 +171,6 @@ export default class Swappables extends Component<{}> {
     }
   }
 
-  // Determines if the tile at location i,j has a neighbor of the same color.
-  hasNeighbor(i, j) {
-    // Tile data source dependency
-    var { tileDataSource } = this.state;
-
-    let hasANeighbor = false;
-    var neighbors = Array();
-
-    let l = 1;
-    let r = 1;
-    let u = 1;
-    let d = 1;
-
-    if (i <= 0) {
-      l = 0;
-    }
-
-    if (i >= 4) {
-      r = 0;
-    }
-
-    if (j <= 0) {
-      u = 0;
-    }
-
-    if (j >= 4) {
-      d = 0;
-    }
-
-    let spots = [l, r, u, d];
-    let spotsLength = spots.length;
-
-    // Checking for edge cases.
-    for (let m = 0; m < spotsLength; m++) {
-      // Spots tells us which neighbors are available to check based on edge cases.
-      // If it's zero, that means that that particular spot lands is not valid and we should not check it.
-      if (spots[m] != 0) {
-        // left
-        if (m == 0) {
-          // Push the left tile to the array of spots to check.
-          neighbors.push(tileDataSource[i - 1][j]);
-        }
-        // right
-        if (m == 1) {
-          neighbors.push(tileDataSource[i + 1][j]);
-        }
-        // up
-        if (m == 2) {
-          neighbors.push(tileDataSource[i][j - 1]);
-        }
-        // down
-        if (m == 3) {
-          neighbors.push(tileDataSource[i][j + 1]);
-        }
-      }
-    }
-    var neighborsLength = neighbors.length;
-
-    for (var n = 0; n < neighborsLength; n++) {
-      if (neighbors[n].imageType == tileDataSource[i][j].imageType) {
-        hasANeighbor = true;
-      } else if (
-        isJam(neighbors[n].imageType) &&
-        isJam(tileDataSource[i][j].imageType)
-      ) {
-        hasANeighbor = true;
-      }
-    }
-
-    return hasANeighbor;
-  }
-
   // data - the array of
   pushTileDataToComponent(tileData) {
     console.log("Pushing Tile Data");
@@ -273,7 +201,7 @@ export default class Swappables extends Component<{}> {
   }
 
   // takes the indexes that will be animated and
-  animateMatch(indexesToAnimate, location) {
+  animateBeanMatch(indexesToAnimate, location) {
     let locationToAnimateTo = [
       location[0] * TILE_WIDTH,
       location[1] * TILE_WIDTH
@@ -303,30 +231,6 @@ export default class Swappables extends Component<{}> {
         })
       ]).start(() => {});
     }
-  }
-
-  // Completes the rendering logic for the JamJar component. DEPRECATED
-  makeJamJar() {
-    let [translateX, translateY] = [
-      this.state.JamJarLocation.x,
-      this.state.JamJarLocation.y
-    ];
-    let scale = this.state.JamJarScaleX;
-
-    let jar = (
-      <View style={styles.jamJarWrapper}>
-        <Animated.View style={{ transform: [scale] }}>
-          <Image source={imageType.REDJAM} style={styles.jamJar} />
-        </Animated.View>
-      </View>
-    );
-
-    this.state.JamJarLocation.setValue({ x: 0, y: 0 });
-    this.state.JamJarLocation.setOffset({
-      x: TILE_WIDTH * 2,
-      y: TILE_WIDTH * 2
-    });
-    this.state.JamJarLocation.flattenOffset();
   }
 
   condenseColumns(data, beanIndexes) {
@@ -366,28 +270,8 @@ export default class Swappables extends Component<{}> {
     return dataArray;
   }
 
-  feedTuffy(jarIndexes) {
-    console.log("Feeding Tuffy!");
-
-    jarIndexes.map((e, i) => {
-      let x = e[0];
-      let y = e[1];
-
-      console.log("x=", x);
-      console.log("y=", y);
-
-      Animated.spring(
-        //Step 1
-        this.state.tileDataSource[x][y].location, //Step 2
-        { toValue: { x: -100, y: -100 }, friction: 6 } //Step 3
-      ).start();
-    });
-  }
-
   // Handles swipe events
   updateGrid(i, j, dx, dy) {
-    console.log("Swipe direction?", this.swipeDirection);
-
     if (dx == 0) {
       this.currentDirection = rowOrCol.COLUMN;
       this.otherDirection = rowOrCol.ROW;
@@ -396,11 +280,8 @@ export default class Swappables extends Component<{}> {
       this.otherDirection = rowOrCol.COLUMN;
     }
 
-    let doesTheStartColorAllHaveNeighbors = false;
-    let doesTheEndColorAllHaveNeighbors = false;
     let indexesWithStarterColor = [[]];
     let indexesWithEnderColor = [[]];
-    var jamToJam = imageType.REDJAM;
 
     const newData = this.state.tileDataSource;
 
@@ -410,20 +291,12 @@ export default class Swappables extends Component<{}> {
     const firstJamToJam = this.state.tileDataSource[i][j].imageType;
     const secondJamToJam = this.state.tileDataSource[i + dx][j + dy].imageType;
 
+    // Perform the swap
     newData[i][j] = swapEnder;
     newData[i + dx][j + dy] = swapStarter;
 
-    indexesWithStarterColor = this.getIndexesWithColor(firstJamToJam);
-    indexesWithEnderColor = this.getIndexesWithColor(secondJamToJam);
-
-    /*
-    doesTheStartColorAllHaveNeighbors = this.allHaveNeighbors(
-      indexesWithStarterColor
-    );
-    doesTheEndColorAllHaveNeighbors = this.allHaveNeighbors(
-      indexesWithEnderColor
-    );
-    */
+    let firstJarSpot = [];
+    let secondJarSpot = [];
 
     let firstMatchIndexes = this.checkRowColForMatch(
       [i, j],
@@ -438,6 +311,9 @@ export default class Swappables extends Component<{}> {
       this.otherDirection
     );
 
+    let indexesForFirstColor = [...firstMatchIndexes, ...thirdMatchIndexes];
+    let indexForSecondColor = secondMatchIndexes;
+
     let matchIndexes = [
       ...firstMatchIndexes,
       ...secondMatchIndexes,
@@ -448,21 +324,54 @@ export default class Swappables extends Component<{}> {
 
     // Kinda clunky but it works.
     if (matchIndexes.length != 0) {
+      // // TODO: Fix JarSpot error.
+
       let jarSpot = [i + dx, j + dy];
+      let firstJarSpot = [i + dx, j + dy];
+      let secondJarSpot = [i, j];
+
+      // TODO firstJamToJam must be renamed to like first tile moved or something.
+      if (!isJam(firstJamToJam)) {
+        this.state.tileDataSource[i + dx][j + dy].setView(jar);
+      }
+
+      console.log("This is the jar spot", jarSpot);
 
       indexesWithStarterColor = matchIndexes;
 
-      // Don't need this
+      console.log("In upDateGrid matchIndexes before", indexesWithStarterColor);
+
+      // Find out what jar to set this to
       let jar = getJamJarFromBean(firstJamToJam);
 
-      // Only animate tuffy's head if we're dealing with Jam
+      // TODO firstJamToJam must be renamed to like first tile moved or something.
+      if (!isJam(firstJamToJam)) {
+        this.state.tileDataSource[i + dx][j + dy].setView(jar);
+      }
+
+      // TODO This is a hack. I'm forcing the animateMatch function to handle both jars and beans.
       if (isJam(firstJamToJam)) {
         this.props.animateTuffysHead();
         // TODO: Make sure this isn't HARDCODED and that the jar goes to the right spot.
         jarSpot = [0.5, 8];
-      }
+        this.animateBeanMatch(indexesWithStarterColor, jarSpot);
+      } else {
+        // TODO: Not sure how this nightmare happened.
+        indexesWithStarterColor = indexesWithStarterColor.filter(e => {
+          let firstAreEqual = e[0] == jarSpot[0];
+          let secondAreEqual = e[1] == jarSpot[1];
+          b = !(firstAreEqual && secondAreEqual);
 
-      this.animateMatch(indexesWithStarterColor, jarSpot);
+          console.log("Can I just compare them?", jarSpot == e);
+
+          console.log("this is b", b);
+
+          return b;
+        });
+
+        // TODO I need one of these for the beans and one for the jars seperately.
+        this.animateBeanMatch(indexesWithStarterColor, jarSpot);
+      }
 
       let data = this.state.tileDataSource;
 
@@ -471,47 +380,19 @@ export default class Swappables extends Component<{}> {
 
       // Waits for "animate match" to complete.
       setTimeout(() => {
-        console.log(
-          "In setTimout in upDateGrid indexesWithStarterColor = ",
-          indexesWithStarterColor
-        );
-
+        // Prepare the animation state
         this.animationState = animationType.FALL;
 
         data = this.condenseColumns(
           this.state.tileDataSource,
           indexesWithStarterColor
         );
-        if (!isJam(firstJamToJam)) {
-          this.state.tileDataSource[i + dx][j + dy].setView(jar);
-        }
 
         this.pushTileDataToComponent(data);
 
         this.animationState = animationType.SWAP;
       }, 1200);
-    } else if (doesTheStartColorAllHaveNeighbors) {
-      // Do nothing for now.
-    } else {
-      cancelTouches = false;
     }
-  }
-
-  allHaveNeighbors(indexes) {
-    let len = indexes.length;
-
-    let theyAreAllNeighbors = true;
-
-    for (var n = 0; n < len; n++) {
-      let i = indexes[n][0];
-      let j = indexes[n][1];
-
-      if (this.hasNeighbor(i, j) == false) {
-        theyAreAllNeighbors = false;
-      }
-    }
-
-    return theyAreAllNeighbors;
   }
 
   componentDidUpdate() {
@@ -665,75 +546,6 @@ export default class Swappables extends Component<{}> {
     } else {
       return [];
     }
-  }
-
-  consecutiveJams() {
-    let data = this.state.tileDataSource;
-
-    let horizontalJams = 0;
-
-    let columnsOfJam = 0;
-
-    let rowsequencesOfJam = [[]];
-
-    let colsequencesOfJam = [[]];
-
-    let rowsequenceToAdd = [];
-
-    let colsequenceToAdd = [];
-
-    for (i = 0; i < 5; i++) {
-      for (j = 0; j < 5; j++) {
-        //Find all columns
-        if (isJam(data[i][j].imageType)) {
-          horizontalJams++;
-          rowsequenceToAdd.push([i, j]);
-        } else {
-          if (horizontalJams >= 3) {
-            rowsequencesOfJam.push(rowsequenceToAdd);
-          }
-          horizontalJams = 0;
-          rowsequenceToAdd = [];
-        }
-
-        //Find all rows
-        if (isJam(data[j][i].imageType)) {
-          columnsOfJam++;
-          colsequenceToAdd.push([j, i]);
-        } else {
-          if (columnsOfJam >= 3) {
-            colsequencesOfJam.push(colsequenceToAdd);
-          }
-          columnsOfJam = 0;
-          colsequenceToAdd = [];
-        }
-      }
-    }
-
-    let filteredTotal = [];
-
-    let total = [...colsequencesOfJam, ...rowsequencesOfJam];
-
-    console.log(
-      "This is the total inside consecutiveJams before filtering",
-      total
-    );
-
-    // Double Check this
-    for (i = 0; i < total.length; i++) {
-      if (total[i].length != 0) {
-        for (j = 0; j < total[i].length; j++) {
-          filteredTotal.push(total[i][j]);
-        }
-      }
-    }
-
-    console.log(
-      "This is the filteredTotal inside consecutiveJams",
-      filteredTotal
-    );
-
-    return filteredTotal;
   }
 
   // Gets all indexes with a specific color.
