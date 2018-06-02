@@ -270,6 +270,11 @@ export default class Swappables extends Component<{}> {
     return dataArray;
   }
 
+  containsIndexPair(arr, pair) {
+    let a = arr.filter(e => e[0] == pair[0] && e[1] == pair[1]);
+    return a.length !== 0;
+  }
+
   // Handles swipe events
   updateGrid(i, j, dx, dy) {
     if (dx == 0) {
@@ -279,6 +284,9 @@ export default class Swappables extends Component<{}> {
       this.currentDirection = rowOrCol.ROW;
       this.otherDirection = rowOrCol.COLUMN;
     }
+
+    let swipeBeganAt = [i, j];
+    let swipeDirectedAt = [i + dx, j + dy];
 
     let indexesWithStarterColor = [[]];
     let indexesWithEnderColor = [[]];
@@ -295,104 +303,198 @@ export default class Swappables extends Component<{}> {
     newData[i][j] = swapEnder;
     newData[i + dx][j + dy] = swapStarter;
 
-    let firstJarSpot = [];
-    let secondJarSpot = [];
+    let spotForFirstObject = [i, j];
+    let spotForSecondObject = [i + dx, j + dy];
 
-    let firstMatchIndexes = this.checkRowColForMatch(
+    let firstMatchImageType = imageType.REDJAM;
+    let secondMatchImageType = imageType.REDJAM;
+    let thirdMatchImageType = imageType.REDJAM;
+
+    let matchesInDirectionOfSwipe = this.checkRowColForMatch(
       [i, j],
       this.currentDirection
     );
-    let secondMatchIndexes = this.checkRowColForMatch(
+    let firstMatchesPerpedicularToSwipe = this.checkRowColForMatch(
       [i, j],
       this.otherDirection
     );
-    let thirdMatchIndexes = this.checkRowColForMatch(
+    let secondMatchesPerpedicularToSwipe = this.checkRowColForMatch(
       [i + dx, j + dy],
       this.otherDirection
     );
 
-    let indexesForFirstColor = [...firstMatchIndexes, ...thirdMatchIndexes];
-    let indexForSecondColor = secondMatchIndexes;
-
-    let matchIndexes = [
-      ...firstMatchIndexes,
-      ...secondMatchIndexes,
-      ...thirdMatchIndexes
+    let allMatchIndexes = [
+      ...matchesInDirectionOfSwipe,
+      ...firstMatchesPerpedicularToSwipe,
+      ...secondMatchesPerpedicularToSwipe
     ];
 
-    console.log("match indexes to jam away", matchIndexes);
+    // These cases assume that all matches have been cleared from the board
+    // Case: All three are Jam: Not possible
+    // Case: Two are Jam and One is A Bean
+    // Case: Two are bean and one is Jam
+    // Case: Two are bean and the other is Bean
+    // Case: One is bean and the other is Jam.
+    // Case: One is bean and the other is the same Bean (must be perpendicular)
+    // Case: One is bean and the other is a different bean (must be parallel)
+    // Case: Only one is a bean
 
-    // Kinda clunky but it works.
-    if (matchIndexes.length != 0) {
-      // // TODO: Fix JarSpot error.
-
-      let jarSpot = [i + dx, j + dy];
-      let firstJarSpot = [i + dx, j + dy];
-      let secondJarSpot = [i, j];
-
-      // TODO firstJamToJam must be renamed to like first tile moved or something.
-      if (!isJam(firstJamToJam)) {
-        this.state.tileDataSource[i + dx][j + dy].setView(jar);
-      }
-
-      console.log("This is the jar spot", jarSpot);
-
-      indexesWithStarterColor = matchIndexes;
-
-      console.log("In upDateGrid matchIndexes before", indexesWithStarterColor);
-
+    if (allMatchIndexes.length !== 0) {
       // Find out what jar to set this to
+
       let jar = getJamJarFromBean(firstJamToJam);
 
-      // TODO firstJamToJam must be renamed to like first tile moved or something.
-      if (!isJam(firstJamToJam)) {
-        this.state.tileDataSource[i + dx][j + dy].setView(jar);
+      // Handle Matches In The Swipe Direction
+      if (matchesInDirectionOfSwipe.length !== 0) {
+        console.log("Found matches in the direction of the swipe");
+        if (
+          isJam(
+            this.state.tileDataSource[matchesInDirectionOfSwipe[0][0]][
+              matchesInDirectionOfSwipe[0][1]
+            ].imageType
+          )
+        ) {
+          console.log("yes, this is jam");
+          spotForFirstObject = [0.5, 8];
+        } else {
+          if (this.containsIndexPair(matchesInDirectionOfSwipe, swipeBeganAt)) {
+            // Asinine
+            jar = getJamJarFromBean(
+              this.state.tileDataSource[swipeBeganAt[0]][swipeBeganAt[1]]
+                .imageType
+            );
+            this.state.tileDataSource[swipeBeganAt[0]][swipeBeganAt[1]].setView(
+              jar
+            );
+            spotForFirstObject = swipeBeganAt;
+          } else if (
+            this.containsIndexPair(matchesInDirectionOfSwipe, swipeDirectedAt)
+          ) {
+            jar = getJamJarFromBean(
+              this.state.tileDataSource[swipeDirectedAt[0]][swipeDirectedAt[1]]
+                .imageType
+            );
+            this.state.tileDataSource[swipeDirectedAt[0]][
+              swipeDirectedAt[1]
+            ].setView(jar);
+            spotForFirstObject = swipeDirectedAt;
+          }
+        }
       }
 
-      // TODO This is a hack. I'm forcing the animateMatch function to handle both jars and beans.
-      if (isJam(firstJamToJam)) {
-        this.props.animateTuffysHead();
-        // TODO: Make sure this isn't HARDCODED and that the jar goes to the right spot.
-        jarSpot = [0.5, 8];
-        this.animateBeanMatch(indexesWithStarterColor, jarSpot);
-      } else {
-        // TODO: Not sure how this nightmare happened.
-        indexesWithStarterColor = indexesWithStarterColor.filter(e => {
-          let firstAreEqual = e[0] == jarSpot[0];
-          let secondAreEqual = e[1] == jarSpot[1];
+      // Handle Matches In The Direction perpendicular to the swipe
+      if (firstMatchesPerpedicularToSwipe.length !== 0) {
+        console.log("Found first perpendicular matches");
+        if (
+          isJam(
+            this.state.tileDataSource[firstMatchesPerpedicularToSwipe[0][0]][
+              firstMatchesPerpedicularToSwipe[0][1]
+            ].imageType
+          )
+        ) {
+          console.log("yes, this is jam");
+          spotForFirstObject = [0.5, 8];
+        } else {
+          // Asinine
+          jar = getJamJarFromBean(
+            this.state.tileDataSource[swipeBeganAt[0]][swipeBeganAt[1]]
+              .imageType
+          );
+          this.state.tileDataSource[swipeBeganAt[0]][swipeBeganAt[1]].setView(
+            jar
+          );
+          spotForFirstObject = swipeBeganAt;
+        }
+      }
+
+      // Handle Matches In the other direction perpendicular to the swipe
+      if (secondMatchesPerpedicularToSwipe.length !== 0) {
+        console.log("Found second perpendicular matches");
+        if (
+          isJam(
+            this.state.tileDataSource[secondMatchesPerpedicularToSwipe[0][0]][
+              secondMatchesPerpedicularToSwipe[0][1]
+            ].imageType
+          )
+        ) {
+          console.log("yes, this is jam");
+          spotForSecondObject = [0.5, 8];
+        } else {
+          // Asinine
+          jar = getJamJarFromBean(
+            this.state.tileDataSource[swipeDirectedAt[0]][swipeDirectedAt[1]]
+              .imageType
+          );
+        }
+
+        this.state.tileDataSource[swipeDirectedAt[0]][
+          swipeDirectedAt[1]
+        ].setView(jar);
+
+        spotForSecondObject = swipeDirectedAt;
+      }
+
+      matchesInDirectionOfSwipe = matchesInDirectionOfSwipe.filter(e => {
+        let firstAreEqual = e[0] == spotForFirstObject[0];
+        let secondAreEqual = e[1] == spotForFirstObject[1];
+        b = !(firstAreEqual && secondAreEqual);
+
+        return b;
+      });
+
+      firstMatchesPerpedicularToSwipe = firstMatchesPerpedicularToSwipe.filter(
+        e => {
+          let firstAreEqual = e[0] == spotForFirstObject[0];
+          let secondAreEqual = e[1] == spotForFirstObject[1];
           b = !(firstAreEqual && secondAreEqual);
 
-          console.log("Can I just compare them?", jarSpot == e);
+          return b;
+        }
+      );
 
-          console.log("this is b", b);
+      secondMatchesPerpedicularToSwipe = secondMatchesPerpedicularToSwipe.filter(
+        e => {
+          let firstAreEqual = e[0] == spotForSecondObject[0];
+          let secondAreEqual = e[1] == spotForSecondObject[1];
+          b = !(firstAreEqual && secondAreEqual);
 
           return b;
-        });
+        }
+      );
 
-        // TODO I need one of these for the beans and one for the jars seperately.
-        this.animateBeanMatch(indexesWithStarterColor, jarSpot);
-      }
+      this.animateBeanMatch(matchesInDirectionOfSwipe, spotForFirstObject);
+      this.animateBeanMatch(
+        firstMatchesPerpedicularToSwipe,
+        spotForFirstObject
+      );
+      this.animateBeanMatch(
+        secondMatchesPerpedicularToSwipe,
+        spotForSecondObject
+      );
+    }
 
-      let data = this.state.tileDataSource;
+    let data = this.state.tileDataSource;
+
+    // Waits for "animate match" to complete.
+    setTimeout(() => {
+      // Prepare the animation state
+      this.animationState = animationType.FALL;
+
+      let indexesToProcess = [
+        ...firstMatchesPerpedicularToSwipe,
+        ...matchesInDirectionOfSwipe,
+        ...secondMatchesPerpedicularToSwipe
+      ];
 
       // Recolor the matches with new random colors.
-      data = this.recolorMatches(data, indexesWithStarterColor);
+      data = this.recolorMatches(data, indexesToProcess);
 
-      // Waits for "animate match" to complete.
-      setTimeout(() => {
-        // Prepare the animation state
-        this.animationState = animationType.FALL;
+      data = this.condenseColumns(this.state.tileDataSource, indexesToProcess);
 
-        data = this.condenseColumns(
-          this.state.tileDataSource,
-          indexesWithStarterColor
-        );
+      this.pushTileDataToComponent(data);
 
-        this.pushTileDataToComponent(data);
-
-        this.animationState = animationType.SWAP;
-      }, 1200);
-    }
+      this.animationState = animationType.SWAP;
+    }, 1200);
   }
 
   componentDidUpdate() {
