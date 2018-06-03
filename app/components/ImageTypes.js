@@ -16,6 +16,14 @@ let floatingClouds = require("../assets/FloatingClouds.png");
 let CartoonTuffy = require("../assets/TuffyTile.png");
 let TopOfTuffysHead = require("../assets/TopOfTuffysHead.png");
 
+let TopOfTuffysHead = require("../assets/TopOfTuffysHead.png");
+let TopOfTuffysHead = require("../assets/TopOfTuffysHead.png");
+let TopOfTuffysHead = require("../assets/TopOfTuffysHead.png");
+let TopOfTuffysHead = require("../assets/TopOfTuffysHead.png");
+let TopOfTuffysHead = require("../assets/TopOfTuffysHead.png");
+let TopOfTuffysHead = require("../assets/TopOfTuffysHead.png");
+let TopOfTuffysHead = require("../assets/TopOfTuffysHead.png");
+
 const imageType = {
   PINKJELLYBEAN: pjb,
   PURPLEJELLYBEAN: prjb,
