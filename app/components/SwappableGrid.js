@@ -434,6 +434,7 @@ export default class Swappables extends Component<{}> {
         spotForSecondObject = swipeDirectedAt;
       }
 
+      // Remove the spot where the jar needs to go
       matchesInDirectionOfSwipe = matchesInDirectionOfSwipe.filter(e => {
         let firstAreEqual = e[0] == spotForFirstObject[0];
         let secondAreEqual = e[1] == spotForFirstObject[1];
@@ -441,7 +442,7 @@ export default class Swappables extends Component<{}> {
 
         return b;
       });
-
+      // Remove the spot where the jar needs to go
       firstMatchesPerpedicularToSwipe = firstMatchesPerpedicularToSwipe.filter(
         e => {
           let firstAreEqual = e[0] == spotForFirstObject[0];
@@ -451,7 +452,7 @@ export default class Swappables extends Component<{}> {
           return b;
         }
       );
-
+      // Remove the spot where the jar needs to go
       secondMatchesPerpedicularToSwipe = secondMatchesPerpedicularToSwipe.filter(
         e => {
           let firstAreEqual = e[0] == spotForSecondObject[0];
