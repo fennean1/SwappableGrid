@@ -235,8 +235,9 @@ export default class Swappables extends Component<{}> {
     const swapStarter = this.state.tileDataSource[i][j];
     const swapEnder = this.state.tileDataSource[i + dx][j + dy];
 
-    const firstJamToJam = this.state.tileDataSource[i][j].ImageType;
-    const secondJamToJam = this.state.tileDataSource[i + dx][j + dy].ImageType;
+    const imageTouched = this.state.tileDataSource[i][j].ImageType;
+
+    this.props.setEmojiText(imageTouched);
 
     // Perform the swap
     newData[i][j] = swapEnder;
@@ -267,18 +268,18 @@ export default class Swappables extends Component<{}> {
 
     var tileData = keys.map((row, i) => {
       let dataRows = row.map((key, j) => {
-        let beans = [
+        let imagesToDisplay = [
           ImageTypes.BLUSHINGEMOJI,
-          ImageTypes.HEARTEMOJI,
-          ImageTypes.BOREDEMOJI,
-          ImageTypes.CRYINGEMOJI,
-          ImageTypes.MADEMOJI
+          ImageTypes.SUNGLASSESEMOJI,
+          ImageTypes.LAUGHINGEMOJI,
+          ImageTypes.TOUNGEOUTEMOJI,
+          ImageTypes.HEARTEMOJI
         ];
 
         let randIndex = this.getRandomInt(5);
 
         //  Init new TileData component with bean and index
-        let data = new TileData(beans[randIndex], [i, j], key);
+        let data = new TileData(imagesToDisplay[randIndex], [i, j], key);
 
         return data;
       });
@@ -368,7 +369,7 @@ export default class Swappables extends Component<{}> {
       directionalOffsetThreshold: 80
     };
 
-    // You can use this function
+    // You can use this function to disable swipes.
     let swipeOrNot = cancelTouches
       ? (direction, state) => {
           return;

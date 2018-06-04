@@ -6,7 +6,7 @@ import Dimensions from "Dimensions";
 
 import ImageTypes from "../components/Images";
 
-import { getJamJarFromBean } from "../components/JamFunctions";
+import { whatIsThisImage } from "../components/GridHelpers";
 
 const {
   View,
@@ -21,7 +21,7 @@ const {
 
 let BackGroundImage = require("../assets/BackGroundImage.jpeg");
 
-class GameScreen extends Component {
+class GridScreen extends Component {
   constructor(props) {
     super(props);
 
@@ -29,17 +29,27 @@ class GameScreen extends Component {
     this.topMargin = 125;
 
     this.state = {
-      tuffysHeadScale: new Animated.Value(1),
-      tuffysHeadLocation: new Animated.ValueXY(0, 0)
+      image: "Swipe to rearrange the Emojis!"
     };
   }
+
+  setEmojiText(img) {
+    let emojiText = whatIsThisImage(img);
+    this.setState({ image: emojiText });
+  }
+
   render() {
     return (
       <ImageBackground source={BackGroundImage} style={styles.backGroundImage}>
         <View style={styles.topBarAndGridContainer}>
-          <View style={styles.topBar} />
+          <View style={styles.topBar}>
+            <Text style={styles.text}>{this.state.image}</Text>
+          </View>
           <View style={styles.gridContainer}>
-            <SwappableGrid topMargin={this.topMargin} />
+            <SwappableGrid
+              topMargin={this.topMargin}
+              setEmojiText={this.setEmojiText.bind(this)}
+            />
           </View>
         </View>
       </ImageBackground>
@@ -74,18 +84,18 @@ let styles = StyleSheet.create({
   },
   topBarAndGridContainer: {
     flex: 1,
-    flexDirection: "column"
-    //backgroundColor: pink
+    flexDirection: "column",
+    backgroundColor: pink
   },
   gridContainer: {
     flex: 1,
-    alignItems: "center"
-    //backgroundColor: blue
+    alignItems: "center",
+    backgroundColor: blue
   },
   topBar: {
     marginTop: 50,
-    height: 75
-    //backgroundColor: yellow
+    height: 75,
+    backgroundColor: yellow
   },
   backButton: {
     marginTop: 30,
@@ -112,4 +122,4 @@ let styles = StyleSheet.create({
   }
 });
 
-module.exports = GameScreen;
+module.exports = GridScreen;

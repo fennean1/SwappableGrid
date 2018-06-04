@@ -3,7 +3,7 @@ import ReactNative from "react-native";
 import SwappableGrid from "../components/SwappableGrid";
 import Dimensions from "Dimensions";
 
-var GameScreen = require("../components/GameScreen");
+var GameScreen = require("../components/GridScreen");
 
 const {
   View,
