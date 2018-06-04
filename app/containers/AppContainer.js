@@ -3,7 +3,6 @@ import ReactNative from "react-native";
 import SwappableGrid from "../components/SwappableGrid";
 import Dimensions from "Dimensions";
 
-var HomeScreen = require("../components/HomeScreen");
 var GameScreen = require("../components/GameScreen");
 
 const {
@@ -18,30 +17,9 @@ const {
 
 import { TabNavigator, StackNavigator } from "react-navigation";
 
-const Game = ({ navigation, screenProps }) => {
+const Grid = ({ navigation, screenProps }) => {
   return <GameScreen navigation={navigation} screenProps={screenProps} />;
 };
-
-const Home = ({ navigation, screenProps }) => {
-  return <HomeScreen navigation={navigation} screenProps={screenProps} />;
-};
-
-const AppNavigator = StackNavigator({
-  Root: {
-    screen: Home,
-    navigationOptions: {
-      title: "title",
-      header: null
-    }
-  },
-  GameScreen: {
-    screen: Game,
-    navigationOptions: {
-      title: "Play!",
-      header: null
-    }
-  }
-});
 
 class AppContainer extends Component {
   constructor(props) {
@@ -49,7 +27,7 @@ class AppContainer extends Component {
   }
 
   render() {
-    return <AppNavigator screenProps={this.props} />;
+    return <Grid />;
   }
 }
 

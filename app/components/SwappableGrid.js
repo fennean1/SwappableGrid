@@ -414,15 +414,6 @@ let styles = StyleSheet.create({
     width: 300,
     height: 300
   },
-  gridContainer: {
-    flex: 1,
-    flexDirection: "row",
-    justifyContent: "center"
-  },
-  mainView: {
-    flex: 1,
-    alignItems: "center"
-  },
   button: {
     width: 200,
     height: 50,
@@ -433,8 +424,8 @@ let styles = StyleSheet.create({
   },
   container: {
     width: TILE_WIDTH * 5,
-    height: TILE_WIDTH * 5,
-    backgroundColor: red
+    height: TILE_WIDTH * 5
+    //backgroundColor: red
   },
   tile: {
     width: TILE_WIDTH,

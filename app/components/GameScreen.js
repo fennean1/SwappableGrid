@@ -8,8 +8,6 @@ import ImageTypes from "../components/Images";
 
 import { getJamJarFromBean } from "../components/JamFunctions";
 
-var HomeScreen = require("../components/HomeScreen");
-
 const {
   View,
   Text,
@@ -35,53 +33,15 @@ class GameScreen extends Component {
       tuffysHeadLocation: new Animated.ValueXY(0, 0)
     };
   }
-
-  animateTuffysHead() {
-    Animated.sequence([
-      Animated.delay(100),
-      Animated.spring(this.state.tuffysHeadLocation.y, {
-        toValue: 0.3 * TILE_WIDTH,
-        friction: 5,
-        duration: 1000
-      }),
-      Animated.timing(this.state.tuffysHeadLocation.y, {
-        toValue: TILE_WIDTH * 3,
-        friction: 10,
-        duration: 500
-      })
-    ]).start();
-  }
-
   render() {
-    const { navigate } = this.props.navigation;
-
-    let [translateX, translateY] = [
-      this.state.tuffysHeadLocation.x,
-      this.state.tuffysHeadLocation.y
-    ];
-
-    let scale = this.state.tuffysHeadScale;
-
-    let topOfTuffyComponent = (
-      <Animated.View
-        style={[{ transform: [{ translateX }, { translateY }, { scale }] }]}
-      >
-        <Image style={styles.tuffysHead} source={ImageTypes.TOPOFTUFFYSHEAD} />
-      </Animated.View>
-    );
-
     return (
       <ImageBackground source={BackGroundImage} style={styles.backGroundImage}>
         <View style={styles.topBarAndGridContainer}>
           <View style={styles.topBar} />
           <View style={styles.gridContainer}>
-            <SwappableGrid
-              topMargin={this.topMargin}
-              animateTuffysHead={this.animateTuffysHead.bind(this)}
-            />
+            <SwappableGrid topMargin={this.topMargin} />
           </View>
         </View>
-        {topOfTuffyComponent}
       </ImageBackground>
     );
   }

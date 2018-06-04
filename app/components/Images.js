@@ -1,9 +1,9 @@
 // Add require statements for the assets you want to use here.
-let BlushingEmoji = require("../assets/BlushingEmoji.jpeg");
-let CryingEmoji = require("../assets/CryingEmoji.jpeg");
-let BoredEmoji = require("../assets/BoredEmoji.jpeg");
-let MadEmoji = require("../assets/MadEmoji.jpeg");
-let HeartEmoji = require("../assets/HeartEmoji.jpeg");
+let BlushingEmoji = require("../assets/BlushingEmoji.png");
+let CryingEmoji = require("../assets/CryingLaughingEmoji.png");
+let BoredEmoji = require("../assets/SunglassesEmoji.png");
+let MadEmoji = require("../assets/ToungeOutEmoji.png");
+let HeartEmoji = require("../assets/HeartInEyesEmoji.png");
 
 //
 const ImageTypes = {
