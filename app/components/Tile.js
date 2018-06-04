@@ -16,24 +16,12 @@ import {
   Image
 } from "react-native";
 
-// import { primaryColor } from “../styles/common.js”;
-
-// import Viewport from './app/Viewport';
-
 const instructions = Platform.select({
   ios: "Press Cmd+R to reload,\n" + "Cmd+D or shake for dev menu",
   android:
     "Double tap R on your keyboard to reload,\n" +
     "Shake or press menu button for dev menu"
 });
-
-let pjb = require("../assets/PinkJellyBean.png");
-let pujb = require("../assets/PurpleJellyBean.png");
-let bjb = require("../assets/BlueJellyBean.png");
-let ojb = require("../assets/OrangeJellyBean.png");
-let gjb = require("../assets/GreenJellyBean.png");
-let yjb = require("../assets/YellowJellyBean.png");
-let rjb = require("../assets/RedJellyBean.png");
 
 export default class Draggable extends Component<{}> {
   constructor(props) {

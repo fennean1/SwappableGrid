@@ -1,4 +1,4 @@
-import ImageTypes from "../components/ImageTypes";
+import ImageTypes from "../components/Images";
 
 export const isJam = obj => {
   switch (obj) {

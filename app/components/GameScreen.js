@@ -1,13 +1,10 @@
 import React, { Component } from "react";
 import ReactNative from "react-native";
-import { connect } from "react-redux";
-import { ActionCreators } from "../actions";
-import { bindActionCreators } from "redux";
 import SwappableGrid from "../components/SwappableGrid";
 //import {App} from './App';
 import Dimensions from "Dimensions";
 
-import ImageTypes from "../components/ImageTypes";
+import ImageTypes from "../components/Images";
 
 import { getJamJarFromBean } from "../components/JamFunctions";
 
@@ -24,12 +21,7 @@ const {
   Animated
 } = ReactNative;
 
-let floatingClouds = require("../assets/FloatingClouds.png");
-let justClouds = require("../assets/CloudsBackground.png");
-let backButton = require("../assets/GreenBackButton.png");
-let RedJam = require("../assets/RedJam.png");
-let tuffysCartoonHead = require("../assets/TuffyTile.png");
-let rowOfJam = require("../assets/JarsOfJam.png");
+let BackGroundImage = require("../assets/BackGroundImage.jpeg");
 
 class GameScreen extends Component {
   constructor(props) {
@@ -60,18 +52,6 @@ class GameScreen extends Component {
     ]).start();
   }
 
-  // Old Redux Stuff - will need this later.
-  addRecipe() {
-    //this.props.myProps.addRecipe()
-  }
-
-  componentWillMount() {
-    this.state.tuffysHeadLocation.setValue({
-      x: 0,
-      y: 2 * TILE_WIDTH
-    });
-  }
-
   render() {
     const { navigate } = this.props.navigation;
 
@@ -91,7 +71,7 @@ class GameScreen extends Component {
     );
 
     return (
-      <ImageBackground source={justClouds} style={styles.backGroundImage}>
+      <ImageBackground source={BackGroundImage} style={styles.backGroundImage}>
         <View style={styles.topBarAndGridContainer}>
           <View style={styles.topBar} />
           <View style={styles.gridContainer}>
@@ -173,12 +153,3 @@ let styles = StyleSheet.create({
 });
 
 module.exports = GameScreen;
-
-// Connecting redux stuff/crap
-function mapDispatchToProps(dispatch) {
-  return bindActionCreators(ActionCreators, dispatch);
-}
-
-export default connect(state => {
-  return { recipeCount: state.recipeCount };
-}, mapDispatchToProps)(GameScreen);

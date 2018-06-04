@@ -1,13 +1,4 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- * @flow
- */
-
-// TODO Write the condenseColumns function so that it takes the indexes instead of the color.
-// Pass "data" around instead of constantly referring to "state" this makes it so that we don't have to
-// set state as ofter
-
+// React Native Swappable Grid Template
 import React, { Component } from "react";
 import {
   Platform,
@@ -29,40 +20,29 @@ import GestureRecognizer, {
 // Tile Component - rendered on SwappableGrid
 import Tile from "./Tile";
 
-// Use Platform.select to define behaviors for differnt platforms.
-const instructions = Platform.select({
-  ios: "Press Cmd+R to reload,\n" + "Cmd+D or shake for dev menu",
-  android:
-    "Double tap R on your keyboard to reload,\n" +
-    "Shake or press menu button for dev menu"
-});
-
-import imageType from "../components/ImageTypes";
-
-import { getJamJarFromBean, isJam } from "../components/JamFunctions";
-
-let firstLoad = true;
+import ImageTypes from "../components/Images";
 
 let boardWidth = 5;
 let boardHeight = 5;
 
 let speed = 300;
 
+// Class that stores data related to the swappable element a.k.a. Tile
 class TileData {
   constructor(img, index, key) {
     this.index = index;
     this.fadeAnimation = new Animated.Value(1);
     this.key = key;
     this.location = new Animated.ValueXY();
-    this.imageType = img;
+    this.ImageType = img;
     this.rotation = new Animated.Value(0);
     this.scale = new Animated.Value(1);
     this.view = <Image source={img} style={styles.tile} />;
   }
 
-  setView(imageType) {
-    this.imageType = imageType;
-    this.view = <Image source={imageType} style={styles.tile} />;
+  setView(ImageType) {
+    this.ImageType = ImageTypes.BLUSHINGEMOJI;
+    this.view = <Image source={ImageType} style={styles.tile} />;
   }
 }
 
@@ -88,6 +68,7 @@ export default class Swappables extends Component<{}> {
     this.animationState = animationType.SWAP;
     this.currentDirection = rowOrCol.ROW;
     this.otherDirection = rowOrCol.COLUMN;
+    this.gridSize = [5, 5];
 
     this.state = {
       origin: [0, 0],
@@ -99,8 +80,7 @@ export default class Swappables extends Component<{}> {
       JamJarLocation: new Animated.ValueXY(),
       JamJarComponent: <View />,
       JamJarScaleX: new Animated.Value(1),
-      JamJarScaleY: new Animated.Value(1),
-      JamJar: imageType.REDJAM
+      JamJarScaleY: new Animated.Value(1)
     };
   }
 
@@ -199,7 +179,7 @@ export default class Swappables extends Component<{}> {
     });
   }
 
-  // takes the indexes that will be animated and
+  // takes the indexes that will be animated.
   animateBeanMatch(indexesToAnimate, location) {
     let locationToAnimateTo = [
       location[0] * TILE_WIDTH,
@@ -255,8 +235,8 @@ export default class Swappables extends Component<{}> {
     const swapStarter = this.state.tileDataSource[i][j];
     const swapEnder = this.state.tileDataSource[i + dx][j + dy];
 
-    const firstJamToJam = this.state.tileDataSource[i][j].imageType;
-    const secondJamToJam = this.state.tileDataSource[i + dx][j + dy].imageType;
+    const firstJamToJam = this.state.tileDataSource[i][j].ImageType;
+    const secondJamToJam = this.state.tileDataSource[i + dx][j + dy].ImageType;
 
     // Perform the swap
     newData[i][j] = swapEnder;
@@ -288,25 +268,16 @@ export default class Swappables extends Component<{}> {
     var tileData = keys.map((row, i) => {
       let dataRows = row.map((key, j) => {
         let beans = [
-          imageType.BLUEJELLYBEAN,
-          imageType.PINKJELLYBEAN,
-          imageType.PURPLEJELLYBEAN,
-          imageType.YELLOWJELLYBEAN,
-          imageType.ORANGEJELLYBEAN,
-          imageType.GREENJELLYBEAN,
-          imageType.REDJELLYBEAN,
-          imageType.REDJAM,
-          imageType.BLUEJAM,
-          imageType.ORANGEJAM,
-          imageType.PURPLEJAM,
-          imageType.GREENJAM,
-          imageType.PINKJAM,
-          imageType.PURPLEJAM,
-          imageType.YELLOWJAM
+          ImageTypes.BLUSHINGEMOJI,
+          ImageTypes.HEARTEMOJI,
+          ImageTypes.BOREDEMOJI,
+          ImageTypes.CRYINGEMOJI,
+          ImageTypes.MADEMOJI
         ];
 
-        let randIndex = this.getRandomInt(7);
+        let randIndex = this.getRandomInt(5);
 
+        //  Init new TileData component with bean and index
         let data = new TileData(beans[randIndex], [i, j], key);
 
         return data;
@@ -352,82 +323,11 @@ export default class Swappables extends Component<{}> {
   }
 
   isMatch(itemOne, itemTwo) {
-    if (itemOne.imageType == itemTwo.imageType) {
+    if (itemOne.ImageType == itemTwo.ImageType) {
       return true;
-    } else if (isJam(itemOne.imageType) && isJam(itemTwo.imageType)) {
+    } else if (isJam(itemOne.ImageType) && isJam(itemTwo.ImageType)) {
       return true;
     }
-  }
-
-  checkRowColForMatch(coordinate, direction) {
-    let consecutives = [];
-
-    for (i = 0; i < 4; i++) {
-      // If its a column,check the next item in the column
-      // Inistialize these to zero and then decide which one will be iterated and which will be held consant.
-      let x = 0;
-      let y = 0;
-
-      // Used to whether the next itme should be on the left or on the right.
-      let dx = 0;
-      let dy = 0;
-
-      if (direction == rowOrCol.COLUMN) {
-        x = coordinate[0];
-        y = i;
-        dy = 1;
-      } else if (direction == rowOrCol.ROW) {
-        x = i;
-        dx = 1;
-        y = coordinate[1];
-      }
-
-      let firstItem = this.state.tileDataSource[x][y];
-      let nextItem = this.state.tileDataSource[x + dx][y + dy];
-
-      if (this.isMatch(firstItem, nextItem)) {
-        console.log("found a pair!", x, y);
-        consecutives.push([x, y]);
-        console.log("Consecutive indexes", consecutives);
-
-        // Check if I've reached the end of the loop.
-        if (i == 3) {
-          consecutives.push([x + dx, y + dy]);
-        }
-      } else {
-        // Push the last item in the sequence of matches
-        consecutives.push([x, y]);
-        if (consecutives.length >= 3) {
-          console.log("returning consecutives");
-          return consecutives;
-        } else {
-          // Reset
-          consecutives = [];
-        }
-      }
-    }
-
-    if (consecutives.length >= 3) {
-      return consecutives;
-    } else {
-      return [];
-    }
-  }
-
-  // Gets all indexes with a specific color.
-  getIndexesWithColor(color) {
-    let colorIndexes = new Array();
-
-    let x = this.state.tileDataSource.map((row, i) => {
-      let colorRow = row.map((e, j) => {
-        if (e.imageType == color) {
-          colorIndexes.push([i, j]);
-        } else if (isJam(e.imageType) && isJam(color)) {
-          colorIndexes.push([i, j]);
-        }
-      });
-    });
-    return colorIndexes;
   }
 
   // Animates the values in the tile data source based on their index in the array.
@@ -461,54 +361,14 @@ export default class Swappables extends Component<{}> {
     });
   }
 
-  recolorMatches(data, neighbors) {
-    let x = data.map((row, i) => {
-      let y = row.map((e, j) => {
-        const beans = [
-          imageType.BLUEJELLYBEAN,
-          imageType.PINKJELLYBEAN,
-          imageType.PURPLEJELLYBEAN,
-          imageType.YELLOWJELLYBEAN,
-          imageType.ORANGEJELLYBEAN,
-          imageType.GREENJELLYBEAN,
-          imageType.REDJELLYBEAN,
-          imageType.REDJAM,
-          imageType.BLUEJAM,
-          imageType.ORANGEJAM,
-          imageType.PURPLEJAM,
-          imageType.GREENJAM,
-          imageType.PINKJAM,
-          imageType.PURPLEJAM,
-          imageType.YELLOWJAM
-        ];
-
-        let randIndex = this.getRandomInt(7);
-
-        let n = neighbors.filter(e => {
-          return i == e[0] && j == e[1];
-        });
-
-        if (n.length != 0) {
-          e.setView(beans[randIndex]);
-          return e;
-        } else {
-          return e;
-        }
-      });
-
-      return y;
-    });
-
-    return x;
-  }
-
   render() {
+    // Configuration for swipe gesture properties
     const config = {
       velocityThreshold: 0.3,
       directionalOffsetThreshold: 80
     };
 
-    // Only swipe if cancelTouches is false.
+    // You can use this function
     let swipeOrNot = cancelTouches
       ? (direction, state) => {
           return;
@@ -538,12 +398,15 @@ let TILE_WIDTH = windowSpan / 6;
 let windowWidth = Window.width;
 let windowHeight = Window.height;
 
-let blue = "#4286f4";
-let red = "#f24646";
-let yellow = "#faff7f";
-let green = "#31a51a";
-let orange = "#ff7644";
-let pink = "#ff51f3";
+// Set this true to see the layout of components highlighted in  different colors
+let colored = false;
+
+let blue = colored ? "#4286f4" : "#00ffff";
+let red = colored ? "#f24646" : "#00ffff";
+let yellow = colored ? "#faff7f" : "#00ffff";
+let green = colored ? "#31a51a" : "#00ffff";
+let orange = colored ? "#ff7644" : "#00ffff";
+let pink = colored ? "#ff51f3" : "#00ffff";
 
 let styles = StyleSheet.create({
   backGroundImage: {
@@ -570,8 +433,8 @@ let styles = StyleSheet.create({
   },
   container: {
     width: TILE_WIDTH * 5,
-    height: TILE_WIDTH * 5
-    //backgroundColor: red,
+    height: TILE_WIDTH * 5,
+    backgroundColor: red
   },
   tile: {
     width: TILE_WIDTH,

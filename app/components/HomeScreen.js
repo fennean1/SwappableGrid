@@ -1,9 +1,6 @@
 import React, { Component } from "react";
 import ReactNative from "react-native";
-import { connect } from "react-redux";
-import { ActionCreators } from "../actions";
 
-import { bindActionCreators } from "redux";
 import SwappableGrid from "../components/SwappableGrid";
 //import {App} from './App';
 import Dimensions from "Dimensions";
@@ -22,10 +19,8 @@ const {
 
 let playButton = require("../assets/PlayButton.png");
 
-let floatingClouds = require("../assets/FloatingClouds.png");
-let justClouds = require("../assets/CloudsBackground.png");
-let tuffyMainLogo = require("../assets/TuffyMainLogo.png");
-let tuffyCartoonHead = require("../assets/TuffysHead.png");
+let BackGroundImage = require("../assets/BackGroundImage.jpeg");
+let TuffyMainLogo = require("../assets/TuffyMainLogo.png");
 
 class HomeScreen extends Component {
   constructor(props) {
@@ -43,10 +38,10 @@ class HomeScreen extends Component {
     const { navigate } = this.props.navigation;
 
     return (
-      <ImageBackground source={justClouds} style={styles.backGroundImage}>
+      <ImageBackground source={BackGroundImage} style={styles.backGroundImage}>
         <View style={styles.mainContainer}>
           <View style={styles.header}>
-            <Image source={tuffyMainLogo} style={styles.backGroundImage} />
+            <Image source={TuffyMainLogo} style={styles.backGroundImage} />
           </View>
           <TouchableHighlight
             style={styles.playbutton}
